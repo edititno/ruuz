@@ -1,0 +1,188 @@
+{% comment %} Ruuz Context Section v0.2 — weather + time of day {% endcomment %}
+
+<style>
+  .ruuz-hero {
+    padding: 120px 40px;
+    text-align: center;
+    background-color: #1A2A3A;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    color: #FFFFFF;
+    position: relative;
+    transition: all 0.5s ease;
+  }
+
+  .ruuz-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.35);
+    z-index: 1;
+  }
+
+  .ruuz-hero-content {
+    position: relative;
+    z-index: 2;
+  }
+
+  .ruuz-hero-heading {
+    font-family: var(--font-heading--family);
+    font-size: 4rem;
+    margin-bottom: 12px;
+    font-weight: 700;
+    line-height: 1.1;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  .ruuz-hero-subheading {
+    font-family: var(--font-body--family);
+    font-size: 1.3rem;
+    margin-bottom: 28px;
+    opacity: 0.9;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  .ruuz-hero-button {
+    display: inline-block;
+    padding: 14px 32px;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 4px;
+    background-color: #FFFFFF;
+    color: #2C2C2C;
+    transition: opacity 0.3s ease;
+    font-family: var(--font-body--family);
+  }
+
+  .ruuz-hero-button:hover {
+    opacity: 0.85;
+  }
+
+  .ruuz-collection {
+    padding: 60px 20px;
+  }
+
+  .ruuz-collection-title {
+    font-family: var(--font-heading--family);
+    font-size: 1.8rem;
+    text-align: center;
+    margin-bottom: 40px;
+    font-weight: 600;
+  }
+
+  .ruuz-product-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  @media (max-width: 768px) {
+    .ruuz-product-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .ruuz-hero {
+      padding: 80px 24px;
+    }
+    .ruuz-hero-heading {
+      font-size: 2.5rem;
+    }
+    .ruuz-hero-subheading {
+      font-size: 1.1rem;
+    }
+  }
+
+  .ruuz-product-card {
+    text-align: center;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+
+  .ruuz-product-card img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 12px;
+  }
+
+  .ruuz-product-card h3 {
+    font-family: var(--font-heading--family);
+    font-size: 1.1rem;
+    margin-bottom: 4px;
+    font-weight: 600;
+  }
+
+  .ruuz-product-card .price {
+    font-family: var(--font-body--family);
+    font-weight: 500;
+    opacity: 0.8;
+  }
+</style>
+
+<!-- HERO SECTION -->
+<div class="ruuz-hero">
+  <div class="ruuz-hero-content">
+    <h1 class="ruuz-hero-heading">Train in the Sun</h1>
+    <p class="ruuz-hero-subheading">Lightweight gear for clear skies and warm days</p>
+    <a href="/collections/sunshine-picks" class="ruuz-hero-button">Shop Sunshine Picks</a>
+  </div>
+</div>
+
+<!-- SUNNY COLLECTION -->
+<div id="ruuz-sunny" class="ruuz-collection">
+  <h2 class="ruuz-collection-title">Sunshine Picks</h2>
+  <div class="ruuz-product-grid">
+    {% assign sunny_collection = collections['sunshine-picks'] %}
+    {% if sunny_collection %}
+      {% for product in sunny_collection.products limit: 4 %}
+        <a href="{{ product.url }}" class="ruuz-product-card">
+          {% if product.featured_image %}
+            <img src="{{ product.featured_image | image_url: width: 400 }}" alt="{{ product.title }}">
+          {% endif %}
+          <h3>{{ product.title }}</h3>
+          <p class="price">{{ product.price | money }}</p>
+        </a>
+      {% endfor %}
+    {% else %}
+      <p>Collection not found. Make sure "Sunshine Picks" exists with handle "sunshine-picks".</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- RAINY COLLECTION (hidden by default) -->
+<div id="ruuz-rainy" class="ruuz-collection" style="display: none;">
+  <h2 class="ruuz-collection-title">Rainy Day Essentials</h2>
+  <div class="ruuz-product-grid">
+    {% assign rainy_collection = collections['rainy-day-essentials'] %}
+    {% if rainy_collection %}
+      {% for product in rainy_collection.products limit: 4 %}
+        <a href="{{ product.url }}" class="ruuz-product-card">
+          {% if product.featured_image %}
+            <img src="{{ product.featured_image | image_url: width: 400 }}" alt="{{ product.title }}">
+          {% endif %}
+          <h3>{{ product.title }}</h3>
+          <p class="price">{{ product.price | money }}</p>
+        </a>
+      {% endfor %}
+    {% else %}
+      <p>Collection not found. Make sure "Rainy Day Essentials" exists with handle "rainy-day-essentials".</p>
+    {% endif %}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Ruuz Context",
+  "tag": "section",
+  "class": "ruuz-section",
+  "settings": []
+}
+{% endschema %}
