@@ -1,6 +1,6 @@
 /*
- * Ruuz Context Engine v0.4 (Rebel Theme - Full Integration)
- * Adapts: banner, hero, collections, pull quote, media sections
+* Ruuz Context Engine v0.5 (Rebel Theme - Full Integration)
+* Adapts: banner, hero, collections, pull quote, media sections
  */
 
 (function () {
@@ -283,22 +283,41 @@
       });
   }
 
+  function fetchIPLocation() {
+    fetch('https://ipapi.co/json/')
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (data.latitude && data.longitude) {
+          console.log('[Ruuz] IP location detected: ' + data.city + ', ' + data.region);
+          fetchWeather(data.latitude, data.longitude);
+        } else {
+          console.log('[Ruuz] IP location failed, using default (DC)');
+          fetchWeather(CONFIG.defaultLat, CONFIG.defaultLon);
+        }
+      })
+      .catch(function () {
+        console.log('[Ruuz] IP location error, using default (DC)');
+        fetchWeather(CONFIG.defaultLat, CONFIG.defaultLon);
+      });
+  }
+
   function init() {
-    console.log('[Ruuz] Context Engine v0.4 starting...');
+    console.log('[Ruuz] Context Engine v0.5 starting...');
 
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         function (pos) {
-          console.log('[Ruuz] Location detected');
+          console.log('[Ruuz] Browser location detected');
           fetchWeather(pos.coords.latitude, pos.coords.longitude);
         },
         function () {
-          console.log('[Ruuz] Location denied, using default (DC)');
-          fetchWeather(CONFIG.defaultLat, CONFIG.defaultLon);
+          console.log('[Ruuz] Browser location denied, trying IP location...');
+          fetchIPLocation();
         }
       );
     } else {
-      fetchWeather(CONFIG.defaultLat, CONFIG.defaultLon);
+      console.log('[Ruuz] Geolocation not supported, trying IP location...');
+      fetchIPLocation();
     }
   }
 
