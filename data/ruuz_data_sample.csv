@@ -1,0 +1,21 @@
+timestamp,city,lat,lon,weather,weather_code,temp,feels_like,humidity,wind_speed,sunrise,sunset,time_of_day,mood
+2026-04-08 13:59:34,Washington DC,38.9072,-77.0369,clear sky,800,56,52,27,6,06:41,19:37,afternoon,sunny
+2026-04-08 13:59:34,New York,40.7128,-74.006,clear sky,800,52,48,22,6,06:28,19:27,afternoon,sunny
+2026-04-08 13:59:34,Los Angeles,34.0522,-118.2437,clear sky,800,74,73,39,6,09:30,22:18,afternoon,sunny
+2026-04-08 13:59:35,Chicago,41.8781,-87.6298,overcast clouds,804,58,56,43,17,07:21,20:22,afternoon,rainy
+2026-04-08 13:59:35,Miami,25.7617,-80.1918,light rain,500,77,78,78,14,07:04,19:40,afternoon,rainy
+2026-04-08 13:59:36,Seattle,47.6062,-122.3321,clear sky,800,54,52,55,4,09:33,22:48,afternoon,sunny
+2026-04-08 13:59:36,Denver,39.7392,-104.9903,scattered clouds,802,68,66,18,11,08:32,21:30,afternoon,sunny
+2026-04-08 13:59:36,Atlanta,33.749,-84.388,overcast clouds,804,66,63,37,13,07:15,20:02,afternoon,rainy
+2026-04-08 13:59:37,Boston,42.3601,-71.0589,clear sky,800,40,35,40,7,06:14,19:17,afternoon,sunny
+2026-04-08 13:59:37,Phoenix,33.4484,-112.074,clear sky,800,85,82,13,2,09:06,21:53,afternoon,sunny
+2026-04-08 14:14:44,Washington DC,38.9072,-77.0369,clear sky,800,56,53,34,6,06:41,19:37,afternoon,sunny
+2026-04-08 14:14:44,New York,40.7128,-74.006,clear sky,800,52,48,22,6,06:28,19:27,afternoon,sunny
+2026-04-08 14:14:45,Los Angeles,34.0522,-118.2437,clear sky,800,74,73,39,6,09:30,22:18,afternoon,sunny
+2026-04-08 14:14:45,Chicago,41.8781,-87.6298,overcast clouds,804,60,58,43,16,07:21,20:22,afternoon,rainy
+2026-04-08 14:14:45,Miami,25.7617,-80.1918,scattered clouds,802,77,78,80,14,07:04,19:40,afternoon,sunny
+2026-04-08 14:14:46,Seattle,47.6062,-122.3321,clear sky,800,54,52,61,4,09:33,22:48,afternoon,sunny
+2026-04-08 14:14:46,Denver,39.7392,-104.9903,scattered clouds,802,68,65,22,11,08:32,21:30,afternoon,sunny
+2026-04-08 14:14:46,Atlanta,33.749,-84.388,overcast clouds,804,66,64,39,13,07:15,20:02,afternoon,rainy
+2026-04-08 14:14:47,Boston,42.3601,-71.0589,clear sky,800,41,37,42,7,06:14,19:17,afternoon,sunny
+2026-04-08 14:14:47,Phoenix,33.4484,-112.074,clear sky,800,86,82,13,2,09:06,21:53,afternoon,sunny
