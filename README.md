@@ -67,6 +67,8 @@ The engine processes these inputs and applies a "mood" (sunny or rainy) combined
 - **Streamlit** — Interactive analytics dashboard
 - **OpenWeatherMap API** — Real-time weather data
 - **ipapi.co** — IP-based geolocation fallback (no browser permission needed)
+- **Open-Meteo API** — UV index data (free, no key required)
+- **OpenWeatherMap Air Pollution API** — Air quality index data
 - **HTML/CSS** — Responsive rainy collection layout
 - **Figma** — UI/UX design and mockups
 
