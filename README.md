@@ -69,18 +69,21 @@ The engine processes these inputs and applies a "mood" (sunny or rainy) combined
 - **HTML/CSS** — Responsive rainy collection layout
 - **Figma** — UI/UX design and mockups
 
+## File Structure
+
+```
 ruuz/
-    ├── assets/
-    │   └── ruuz-context.js          # Context engine v0.4
-    ├── data/
-    │   ├── ruuz_dashboard.py        # Streamlit analytics dashboard
-    │   ├── ruuz_data_sample.csv     # Sample weather data output
-    │   ├── ruuz_db.py               # SQLite database loader + SQL queries
-    │   └── ruuz_logger.py           # Python data logger (10 cities)
-    ├── sections/
-    │   └── ruuz-rainy.liquid         # Hidden rainy day collection
-    └── README.md
-    
+├── assets/
+│   └── ruuz-context.js          # Context engine v0.4
+├── data/
+│   ├── ruuz_dashboard.py        # Streamlit analytics dashboard
+│   ├── ruuz_data_sample.csv     # Sample weather data output
+│   ├── ruuz_db.py               # SQLite database loader + SQL queries
+│   └── ruuz_logger.py           # Python data logger (10 cities)
+├── sections/
+│   └── ruuz-rainy.liquid         # Hidden rainy day collection
+└── README.md
+```
 ## Product Vision
 
 Ruuz is designed as a proof of concept for a broader contextual commerce platform.
