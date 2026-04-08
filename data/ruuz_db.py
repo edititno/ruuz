@@ -1,24 +1,21 @@
-# Ruuz Database & SQL Queries v1.0
-# Loads CSV data into a SQLite database and runs queries
+# Ruuz Database & SQL Queries v2.0
+# Loads CSV data into SQLite with weather, UV, and air quality
 
 import sqlite3
 import csv
 import os
 
-# Database file (will be created in this folder)
 DB_FILE = 'ruuz.db'
 CSV_FILE = 'ruuz_data.csv'
 
 def create_database():
-    """Create the database and load CSV data into it"""
-    
-    # Connect to database (creates it if it doesn't exist)
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
-    
-    # Create the table
+
+    cursor.execute('DROP TABLE IF EXISTS weather_logs')
+
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS weather_logs (
+        CREATE TABLE weather_logs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             timestamp TEXT,
             city TEXT,
@@ -32,22 +29,23 @@ def create_database():
             wind_speed INTEGER,
             sunrise TEXT,
             sunset TEXT,
+            uv_index REAL,
+            uv_alert TEXT,
+            air_quality INTEGER,
+            air_quality_label TEXT,
+            air_alert TEXT,
             time_of_day TEXT,
             mood TEXT
         )
     ''')
-    
-    # Clear old data so we don't duplicate
-    cursor.execute('DELETE FROM weather_logs')
-    
-    # Load CSV data
+
     with open(CSV_FILE, 'r') as f:
         reader = csv.DictReader(f)
         for row in reader:
             cursor.execute('''
                 INSERT INTO weather_logs 
-                (timestamp, city, lat, lon, weather, weather_code, temp, feels_like, humidity, wind_speed, sunrise, sunset, time_of_day, mood)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                (timestamp, city, lat, lon, weather, weather_code, temp, feels_like, humidity, wind_speed, sunrise, sunset, uv_index, uv_alert, air_quality, air_quality_label, air_alert, time_of_day, mood)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
                 row['timestamp'],
                 row['city'],
@@ -61,90 +59,111 @@ def create_database():
                 int(row['wind_speed']),
                 row['sunrise'],
                 row['sunset'],
+                float(row['uv_index']),
+                row['uv_alert'],
+                int(row['air_quality']),
+                row['air_quality_label'],
+                row['air_alert'],
                 row['time_of_day'],
                 row['mood']
             ))
-    
+
     conn.commit()
-    
-    # Count records
+
     cursor.execute('SELECT COUNT(*) FROM weather_logs')
     count = cursor.fetchone()[0]
     print(f'Loaded {count} records into database')
     print()
-    
+
     return conn
 
 def run_queries(conn):
-    """Run SQL queries against the data"""
     cursor = conn.cursor()
-    
-    # QUERY 1: How many records per mood?
+
     print('=== QUERY 1: Records by Mood ===')
-    print('SQL: SELECT mood, COUNT(*) FROM weather_logs GROUP BY mood')
-    print()
     cursor.execute('SELECT mood, COUNT(*) as count FROM weather_logs GROUP BY mood')
     for row in cursor.fetchall():
         print(f'  {row[0]}: {row[1]} records')
     print()
-    
-    # QUERY 2: Average temperature by mood
+
     print('=== QUERY 2: Average Temperature by Mood ===')
-    print('SQL: SELECT mood, ROUND(AVG(temp)) FROM weather_logs GROUP BY mood')
-    print()
     cursor.execute('SELECT mood, ROUND(AVG(temp)) as avg_temp FROM weather_logs GROUP BY mood')
     for row in cursor.fetchall():
         print(f'  {row[0]}: {row[1]}F average')
     print()
-    
-    # QUERY 3: Which cities had rainy mood?
-    print('=== QUERY 3: Cities with Rainy Mood ===')
-    print('SQL: SELECT DISTINCT city, weather, temp FROM weather_logs WHERE mood = "rainy"')
+
+    print('=== QUERY 3: Cities with High UV ===')
+    cursor.execute('SELECT city, uv_index, temp, weather FROM weather_logs WHERE uv_alert = "high" ORDER BY uv_index DESC')
+    rows = cursor.fetchall()
+    if rows:
+        for row in rows:
+            print(f'  {row[0]}: UV {row[1]} | {row[2]}F | {row[3]}')
+    else:
+        print('  No high UV records yet')
     print()
-    cursor.execute('SELECT DISTINCT city, weather, temp FROM weather_logs WHERE mood = "rainy"')
+
+    print('=== QUERY 4: Cities with Poor Air Quality ===')
+    cursor.execute('SELECT city, air_quality_label, air_quality, temp FROM weather_logs WHERE air_alert = "poor" ORDER BY air_quality DESC')
+    rows = cursor.fetchall()
+    if rows:
+        for row in rows:
+            print(f'  {row[0]}: {row[1]} ({row[2]}/5) | {row[3]}F')
+    else:
+        print('  No poor air quality records yet')
+    print()
+
+    print('=== QUERY 5: Average UV Index by City ===')
+    cursor.execute('SELECT city, ROUND(AVG(uv_index), 1) as avg_uv FROM weather_logs GROUP BY city ORDER BY avg_uv DESC')
     for row in cursor.fetchall():
-        print(f'  {row[0]}: {row[1]} | {row[2]}F')
+        print(f'  {row[0]}: UV {row[1]}')
     print()
-    
-    # QUERY 4: Hottest and coldest cities
-    print('=== QUERY 4: Temperature Extremes ===')
-    print('SQL: SELECT city, MAX(temp), MIN(temp) FROM weather_logs GROUP BY city ORDER BY MAX(temp) DESC')
-    print()
+
+    print('=== QUERY 6: Temperature Extremes ===')
     cursor.execute('SELECT city, MAX(temp) as max_temp, MIN(temp) as min_temp FROM weather_logs GROUP BY city ORDER BY max_temp DESC')
     for row in cursor.fetchall():
         print(f'  {row[0]}: High {row[1]}F / Low {row[2]}F')
     print()
-    
-    # QUERY 5: Mood distribution by city
-    print('=== QUERY 5: Mood Distribution by City ===')
-    print('SQL: SELECT city, mood, COUNT(*) FROM weather_logs GROUP BY city, mood ORDER BY city')
-    print()
+
+    print('=== QUERY 7: Mood Distribution by City ===')
     cursor.execute('SELECT city, mood, COUNT(*) as count FROM weather_logs GROUP BY city, mood ORDER BY city')
     for row in cursor.fetchall():
         print(f'  {row[0]}: {row[1]} ({row[2]}x)')
     print()
-    
-    # QUERY 6: Average humidity by mood
-    print('=== QUERY 6: Average Humidity by Mood ===')
-    print('SQL: SELECT mood, ROUND(AVG(humidity)) FROM weather_logs GROUP BY mood')
+
+    print('=== QUERY 8: Air Quality Distribution ===')
+    cursor.execute('SELECT air_quality_label, COUNT(*) as count FROM weather_logs GROUP BY air_quality_label ORDER BY air_quality')
+    for row in cursor.fetchall():
+        print(f'  {row[0]}: {row[1]} records')
     print()
+
+    print('=== QUERY 9: Average Humidity by Mood ===')
     cursor.execute('SELECT mood, ROUND(AVG(humidity)) as avg_humidity FROM weather_logs GROUP BY mood')
     for row in cursor.fetchall():
         print(f'  {row[0]}: {row[1]}% average humidity')
     print()
 
-def main():
-    print('=== Ruuz Database & SQL Queries v1.0 ===')
+    print('=== QUERY 10: Alert Summary ===')
+    cursor.execute('SELECT city, COUNT(*) as alerts FROM weather_logs WHERE uv_alert = "high" OR air_alert = "poor" GROUP BY city ORDER BY alerts DESC')
+    rows = cursor.fetchall()
+    if rows:
+        for row in rows:
+            print(f'  {row[0]}: {row[1]} alert(s)')
+    else:
+        print('  No alerts triggered yet')
     print()
-    
+
+def main():
+    print('=== Ruuz Database & SQL Queries v2.0 ===')
+    print()
+
     if not os.path.exists(CSV_FILE):
-        print(f'Error: {CSV_FILE} not found. Run ruuz_logger.py first to collect data.')
+        print(f'Error: {CSV_FILE} not found. Run ruuz_logger.py first.')
         return
-    
+
     conn = create_database()
     run_queries(conn)
     conn.close()
-    
+
     print(f'Database saved as {DB_FILE}')
     print('=== Done ===')
 
