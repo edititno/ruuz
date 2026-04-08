@@ -7,7 +7,7 @@
   'use strict';
 
   var CONFIG = {
-    apiKey: '1abea32cc568b77eaf67ca98bb361206',
+    apiKey: 'YOUR_OPENWEATHERMAP_API_KEY',
     defaultLat: 38.9072,
     defaultLon: -77.0369,
 
