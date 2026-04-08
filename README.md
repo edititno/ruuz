@@ -63,19 +63,20 @@ The engine processes these inputs and applies a "mood" (sunny or rainy) combined
 - **Python** — Data collection logger and SQL database loader
 - **SQLite** — Relational database for weather and context data
 - **SQL** — Queries for mood distribution, temperature analysis, and city-level insights
+- **Pandas** — Data analysis and manipulation
+- **Streamlit** — Interactive analytics dashboard
 - **OpenWeatherMap API** — Real-time weather data
 - **HTML/CSS** — Responsive rainy collection layout
 - **Figma** — UI/UX design and mockups
 
-## File Structure
-
-    ruuz/
+ruuz/
     ├── assets/
     │   └── ruuz-context.js          # Context engine v0.4
     ├── data/
-    │   ├── ruuz_logger.py           # Python data logger (10 cities)
+    │   ├── ruuz_dashboard.py        # Streamlit analytics dashboard
+    │   ├── ruuz_data_sample.csv     # Sample weather data output
     │   ├── ruuz_db.py               # SQLite database loader + SQL queries
-    │   └── ruuz_data_sample.csv     # Sample weather data output
+    │   └── ruuz_logger.py           # Python data logger (10 cities)
     ├── sections/
     │   └── ruuz-rainy.liquid         # Hidden rainy day collection
     └── README.md
