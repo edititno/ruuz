@@ -66,6 +66,7 @@ The engine processes these inputs and applies a "mood" (sunny or rainy) combined
 - **Pandas** — Data analysis and manipulation
 - **Streamlit** — Interactive analytics dashboard
 - **OpenWeatherMap API** — Real-time weather data
+- **ipapi.co** — IP-based geolocation fallback (no browser permission needed)
 - **HTML/CSS** — Responsive rainy collection layout
 - **Figma** — UI/UX design and mockups
 
