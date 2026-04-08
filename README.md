@@ -60,12 +60,26 @@ The engine processes these inputs and applies a "mood" (sunny or rainy) combined
 - **Shopify** — Storefront and product management
 - **Shopify Liquid** — Server-side templating for the rainy day collection section
 - **JavaScript (Vanilla)** — Client-side context engine handling weather detection, geolocation, time logic, and full DOM manipulation across 7 page sections
+- **Python** — Data collection logger and SQL database loader
+- **SQLite** — Relational database for weather and context data
+- **SQL** — Queries for mood distribution, temperature analysis, and city-level insights
 - **OpenWeatherMap API** — Real-time weather data
 - **HTML/CSS** — Responsive rainy collection layout
 - **Figma** — UI/UX design and mockups
 
 ## File Structure
 
+    ruuz/
+    ├── assets/
+    │   └── ruuz-context.js          # Context engine v0.4
+    ├── data/
+    │   ├── ruuz_logger.py           # Python data logger (10 cities)
+    │   ├── ruuz_db.py               # SQLite database loader + SQL queries
+    │   └── ruuz_data_sample.csv     # Sample weather data output
+    ├── sections/
+    │   └── ruuz-rainy.liquid         # Hidden rainy day collection
+    └── README.md
+    
 ## Product Vision
 
 Ruuz is designed as a proof of concept for a broader contextual commerce platform.
