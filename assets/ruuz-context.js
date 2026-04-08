@@ -1,13 +1,14 @@
 /*
-* Ruuz Context Engine v0.5 (Rebel Theme - Full Integration)
-* Adapts: banner, hero, collections, pull quote, media sections
+ * Ruuz Context Engine v0.6 (Rebel Theme - Full Integration)
+ * Adapts: banner, hero, collections, pull quote, media sections
+ * Signals: weather, time of day, IP geolocation, UV index, air quality
  */
 
 (function () {
   'use strict';
 
   var CONFIG = {
-    apiKey: 'YOUR_OPENWEATHERMAP_API_KEY',
+    apiKey: 'YOUR_KEY_HERE',
     defaultLat: 38.9072,
     defaultLon: -77.0369,
 
@@ -130,7 +131,7 @@
     }
   }
 
-  function applyMood(mood) {
+  function applyMood(mood, uvIndex, airQuality) {
     var timeOfDay = getTimeOfDay();
     var moodConfig = CONFIG.moods[mood];
     var timeConfig = moodConfig[timeOfDay];
@@ -252,6 +253,30 @@
       console.log('[Ruuz] Media section 2 updated');
     }
 
+    // 8. UV AND AIR QUALITY ALERTS
+    var alertMessages = [];
+    if (uvIndex >= 6) {
+      alertMessages.push('High UV today (' + Math.round(uvIndex) + ') — protect your skin');
+      document.body.setAttribute('data-ruuz-uv', 'high');
+    } else {
+      document.body.setAttribute('data-ruuz-uv', 'normal');
+    }
+
+    if (airQuality >= 4) {
+      alertMessages.push('Air quality alert — consider indoor workouts');
+      document.body.setAttribute('data-ruuz-air', 'poor');
+    } else {
+      document.body.setAttribute('data-ruuz-air', 'good');
+    }
+
+    if (alertMessages.length > 0) {
+      var alertAnnouncements = document.querySelectorAll('.announcement-bar__text');
+      for (var k = 0; k < alertAnnouncements.length; k++) {
+        alertAnnouncements[k].textContent = alertMessages.join(' | ');
+      }
+      console.log('[Ruuz] Alert banner: ' + alertMessages.join(' | '));
+    }
+
     // FULL LOG
     console.log('[Ruuz] ---- Context Applied ----');
     console.log('[Ruuz] Mood: ' + mood + ' | Time: ' + timeOfDay);
@@ -261,7 +286,42 @@
     console.log('[Ruuz] Media 1: ' + timeConfig.media1Heading);
     console.log('[Ruuz] Media 2: ' + timeConfig.media2Heading);
     console.log('[Ruuz] Collection: ' + (mood === 'rainy' ? 'Rainy Day Essentials' : 'Sunshine Picks'));
+    console.log('[Ruuz] UV Index: ' + (uvIndex || 0));
+    console.log('[Ruuz] Air Quality: ' + (airQuality || 1) + '/5');
     console.log('[Ruuz] --------------------------');
+  }
+
+  function fetchUV(lat, lon, callback) {
+    var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon + '&current=uv_index';
+
+    fetch(url)
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        var uv = data.current && data.current.uv_index ? data.current.uv_index : 0;
+        console.log('[Ruuz] UV Index: ' + uv);
+        callback(uv);
+      })
+      .catch(function () {
+        console.log('[Ruuz] UV fetch failed, defaulting to 0');
+        callback(0);
+      });
+  }
+
+  function fetchAirQuality(lat, lon, callback) {
+    var url = 'https://api.openweathermap.org/data/2.5/air_pollution?lat=' + lat + '&lon=' + lon + '&appid=' + CONFIG.apiKey;
+
+    fetch(url)
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        var aqi = data.list && data.list[0] ? data.list[0].main.aqi : 1;
+        var labels = ['', 'Good', 'Fair', 'Moderate', 'Poor', 'Very Poor'];
+        console.log('[Ruuz] Air Quality: ' + labels[aqi] + ' (' + aqi + '/5)');
+        callback(aqi);
+      })
+      .catch(function () {
+        console.log('[Ruuz] Air quality fetch failed, defaulting to Good');
+        callback(1);
+      });
   }
 
   function fetchWeather(lat, lon) {
@@ -274,12 +334,17 @@
           var code = data.weather[0].id;
           var mood = getMood(code);
           console.log('[Ruuz] Weather: ' + data.weather[0].description + ' | Code: ' + code + ' | Mood: ' + mood + ' | Temp: ' + data.main.temp + 'F');
-          applyMood(mood);
+
+          fetchUV(lat, lon, function (uv) {
+            fetchAirQuality(lat, lon, function (aqi) {
+              applyMood(mood, uv, aqi);
+            });
+          });
         }
       })
       .catch(function () {
         console.log('[Ruuz] API error, defaulting to sunny');
-        applyMood('sunny');
+        applyMood('sunny', 0, 1);
       });
   }
 
@@ -302,7 +367,7 @@
   }
 
   function init() {
-    console.log('[Ruuz] Context Engine v0.5 starting...');
+    console.log('[Ruuz] Context Engine v0.6 starting...');
 
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
