@@ -140,7 +140,7 @@
     document.body.setAttribute('data-ruuz-mood', mood);
     document.body.setAttribute('data-ruuz-time', timeOfDay);
 
-    // 1. ANNOUNCEMENT BANNER
+    // 1. ANNOUNCEMENT BANNER (default mood message, may be overridden by alerts)
     var announcements = document.querySelectorAll('.announcement-bar__text');
     for (var i = 0; i < announcements.length; i++) {
       announcements[i].textContent = timeConfig.announcement;
@@ -255,11 +255,21 @@
 
     // 8. UV AND AIR QUALITY ALERTS
     var alertMessages = [];
-    if (uvIndex >= 6) {
-      alertMessages.push('High UV today (' + Math.round(uvIndex) + ') — protect your skin');
+
+    if (uvIndex >= 11) {
+      alertMessages.push('Extreme UV (' + Math.round(uvIndex) + ') — avoid outdoor exposure');
+      document.body.setAttribute('data-ruuz-uv', 'extreme');
+    } else if (uvIndex >= 8) {
+      alertMessages.push('Very high UV (' + Math.round(uvIndex) + ') — sun protection essential');
+      document.body.setAttribute('data-ruuz-uv', 'very-high');
+    } else if (uvIndex >= 6) {
+      alertMessages.push('High UV (' + Math.round(uvIndex) + ') — protect your skin');
       document.body.setAttribute('data-ruuz-uv', 'high');
+    } else if (uvIndex >= 3) {
+      alertMessages.push('Moderate UV (' + Math.round(uvIndex) + ') — sunscreen recommended');
+      document.body.setAttribute('data-ruuz-uv', 'moderate');
     } else {
-      document.body.setAttribute('data-ruuz-uv', 'normal');
+      document.body.setAttribute('data-ruuz-uv', 'low');
     }
 
     if (airQuality >= 4) {
