@@ -1,6 +1,6 @@
 # Ruuz — Contextual Commerce Engine
 
-Ruuz is a contextual commerce platform that dynamically adapts Shopify storefronts based on real-time environmental signals. Instead of showing every visitor the same static page, Ruuz reads the weather, time of day, location, UV index, and air quality to serve the most relevant products, messaging, imagery, and calls-to-action — all using the merchant's own assets, images, and collections.
+Ruuz is a contextual commerce platform that dynamically adapts Shopify storefronts based on real-time environmental signals. Instead of showing every visitor the same static page, Ruuz reads weather, UV index, air quality, pollen levels, public holidays, national news, stock market sentiment, sunrise/sunset timing, and local time to serve the most relevant products, messaging, imagery, and calls-to-action — all using the merchant's own assets, images, and collections.
 
 **Core thesis:** Ruuz doesn't decide WHO the customer is. It decides WHAT MOMENT the customer is in. The persona stays the same. The context changes.
 
@@ -8,7 +8,7 @@ Ruuz is a contextual commerce platform that dynamically adapts Shopify storefron
 
 When a customer visits a Ruuz-powered store, the engine collects environmental signals and adapts the entire storefront in real time:
 
-- **Announcement banner** — contextual messaging, plus UV and air quality alerts when conditions are dangerous
+- **Announcement banner** — contextual messaging with tiered UV alerts, air quality warnings, pollen alerts, holiday greetings, low-visibility warnings, and market sentiment cues
 - **Hero section** — image, headline, and subheadline swap based on weather + time of day
 - **Featured collection** — warm-weather products when sunny, waterproof gear when raining
 - **Pull quote** — brand messaging adapts to match the current context
@@ -19,23 +19,37 @@ All transitions happen instantly on page load.
 
 ## How It Works
 
-Ruuz collects multiple environmental signals and combines them to determine what to show:
+Ruuz collects multiple environmental signals and combines them to determine what to show. The system has two layers: a FastAPI backend that collects all signals from a single endpoint, and a client-side JavaScript engine that applies the context to the storefront.
 
-1. **Browser geolocation** — detects the visitor's coordinates (most accurate)
-2. **IP geolocation (ipapi.co)** — fallback that detects city from IP address with no browser permission needed
-3. **OpenWeatherMap API** — fetches current weather conditions at that location
-4. **Open-Meteo API** — fetches current UV index
-5. **OpenWeatherMap Air Pollution API** — fetches air quality index
-6. **Local time** — determines morning, afternoon, or evening for copy variations
+**Backend signals (FastAPI):**
 
-The engine processes these signals and applies a "mood" (sunny or rainy) combined with the time of day. UV and air quality alerts override the announcement banner when conditions are dangerous. This creates unique storefront states, each with its own headline, subheadline, announcement, pull quote, editorial copy, images, and featured collection.
+1. **Weather** (OpenWeatherMap) — current conditions, temperature, humidity, wind
+2. **UV index** (Open-Meteo) — real-time ultraviolet radiation level
+3. **Air quality** (OpenWeatherMap) — air pollution index
+4. **Pollen** (Open-Meteo) — grass, birch, and ragweed levels
+5. **Sunrise/sunset** (OpenWeatherMap) — daylight status and golden hour detection
+6. **Public holidays** (Nager.Date) — holiday detection for 100+ countries
+7. **News** (GNews) — top national headlines
+8. **Stock market** (Alpha Vantage) — S&P 500 price, change, and consumer sentiment
+
+**Client-side signals:**
+
+1. **Browser geolocation** — visitor's coordinates (most accurate)
+2. **IP geolocation** (ipapi.co) — fallback that detects city with no browser permission
+3. **Local time** — morning, afternoon, or evening copy variations
+
+The backend processes all signals into a single JSON response. The engine applies a "mood" (sunny or rainy) combined with time of day, and layers on alerts for UV, air quality, pollen, low visibility, holidays, and market conditions.
 
 **Signal priority chain:**
 1. Browser geolocation → IP geolocation → default coordinates
 2. Weather → mood determination
-3. UV index → alert if 6+
+3. UV index → tiered alerts (moderate through extreme)
 4. Air quality → alert if Poor or Very Poor
-5. Time of day → copy variation
+5. Pollen → alert if high
+6. Daylight → reflective gear alert if dark
+7. Holiday → banner override
+8. Stock market → sentiment-based messaging if significant move
+9. Time of day → copy variation
 
 ## Sections Adapted
 
@@ -82,36 +96,44 @@ The engine processes these signals and applies a "mood" (sunny or rainy) combine
 - **Shopify Liquid** — Server-side templating for the rainy day collection section
 - **JavaScript (Vanilla)** — Client-side context engine handling weather detection, geolocation, time logic, and full DOM manipulation across 7 page sections
 - **Python** — Data collection logger and SQL database loader
+- **FastAPI** — Python backend API serving all context signals from one endpoint
+- **OpenAI API (GPT-4o-mini)** — AI-generated headlines, subheadlines, and copy based on real-time context signals
 - **SQLite** — Relational database for weather and context data
 - **SQL** — Queries for mood distribution, temperature analysis, UV tracking, air quality, and city-level insights
 - **Pandas** — Data analysis and manipulation
 - **Streamlit** — Interactive analytics dashboard with charts, alert tables, and data explorer
-- **OpenWeatherMap API** — Real-time weather data
+- **OpenWeatherMap API** — Real-time weather data and sunrise/sunset timing
 - **OpenWeatherMap Air Pollution API** — Air quality index data
-- **Open-Meteo API** — UV index data (free, no key required)
+- **Open-Meteo API** — UV index and pollen data (free, no key required)
 - **ipapi.co** — IP-based geolocation fallback (no browser permission needed)
 - **Nager.Date API** — Public holiday detection for 100+ countries (free, no key required)
+- **GNews API** — Real-time national news headlines
+- **Alpha Vantage API** — Stock market data and consumer sentiment signals
 - **HTML/CSS** — Responsive rainy collection layout
 - **Figma** — UI/UX design and mockups
 
 ## File Structure
-    ruuz/
-    ├── assets/
-    │   └── ruuz-context.js          # Context engine v0.6
-    ├── data/
-    │   ├── ruuz_dashboard.py        # Streamlit analytics dashboard v2.0
-    │   ├── ruuz_data_sample.csv     # Sample weather + UV + air quality data
-    │   ├── ruuz_db.py               # SQLite database loader + 10 SQL queries
-    │   └── ruuz_logger.py           # Python data logger v2.0 (10 cities)
-    ├── sections/
-    │   └── ruuz-rainy.liquid         # Hidden rainy day collection
-    └── README.md
 
+```
+ruuz/
+├── api/
+│   └── ruuz_api.py
+├── assets/
+│   └── ruuz-context.js
+├── data/
+│   ├── ruuz_dashboard.py
+│   ├── ruuz_data_sample.csv
+│   ├── ruuz_db.py
+│   └── ruuz_logger.py
+├── sections/
+│   └── ruuz-rainy.liquid
+└── README.md
+```
 ## Product Vision
 
 Ruuz is designed as a proof of concept for a broader contextual commerce platform.
 
-**Signal expansion:** Temperature thresholds, public holidays (Nager.Date API), sunrise/sunset timing, local and national news (News API), and stock market sentiment for consumer spending signals.
+**Signal expansion (completed):** Weather, UV index, air quality, pollen, IP geolocation, public holidays, sunrise/sunset timing, national news, and stock market sentiment. Future additions include local news by city, sports scores, and social media trending topics.
 
 **Merchant experience:** Zero-config mode that works with existing collections and assets immediately. Smart auto-tagging using ML-powered product classification that scans titles, descriptions, and tags to suggest context mappings. Data quality scoring offered as a free tool that gives merchants an actionable readiness report — not just a pass/fail score, but specific items to fix with direct links to each problem in their Shopify admin. Merchant dashboard for mapping triggers to collections without touching code.
 
