@@ -1,13 +1,15 @@
-# Ruuz Context API v3.0
-# FastAPI backend — all context signals in one endpoint
-# Signals: weather, UV, air quality, holidays, news, pollen, sunrise/sunset, stock market
+# Ruuz Context API v4.0
+# FastAPI backend — all context signals + AI-generated headlines
+# Signals: weather, UV, air quality, pollen, holidays, news, stock market, sunrise/sunset
+# AI: OpenAI generates unique headlines based on all signals
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import requests
 from datetime import datetime
+from openai import OpenAI
 
-app = FastAPI(title='Ruuz Context API', version='3.0')
+app = FastAPI(title='Ruuz Context API', version='4.0')
 
 app.add_middleware(
     CORSMiddleware,
@@ -20,6 +22,9 @@ app.add_middleware(
 OPENWEATHER_KEY = 'YOUR_OPENWEATHERMAP_API_KEY'
 GNEWS_KEY = 'YOUR_GNEWS_API_KEY'
 ALPHAVANTAGE_KEY = 'YOUR_ALPHAVANTAGE_API_KEY'
+OPENAI_KEY = 'YOUR_OPENAI_API_KEY'
+
+openai_client = OpenAI(api_key=OPENAI_KEY)
 
 # Caches
 holiday_cache = {}
@@ -118,7 +123,6 @@ def fetch_pollen(lat, lon):
             birch = data['current'].get('birch_pollen', 0) or 0
             ragweed = data['current'].get('ragweed_pollen', 0) or 0
 
-            # Normalize to 0-5 scale (rough approximation)
             max_pollen = max(grass, birch, ragweed)
             if max_pollen >= 100:
                 level = 5
@@ -241,22 +245,76 @@ def fetch_stock_market():
         pass
     return {'symbol': 'SPY', 'price': 0, 'change': 0, 'change_percent': 0, 'sentiment': 'neutral'}
 
+def generate_ai_copy(context):
+    try:
+        prompt = f"""You are a copywriter for a women's activewear store. Generate storefront copy based on the current context.
+
+Current conditions:
+- Weather: {context['weather']['description']}, {context['weather']['temp']}F (feels like {context['weather']['feels_like']}F)
+- Mood: {context['mood']}
+- Time of day: {context['time_of_day']}
+- Daylight: {context['daylight']}
+- UV index: {context['uv']['index']} ({context['uv']['alert']})
+- Air quality: {context['air_quality']['label']}
+- Pollen: {context['pollen']['alert']}
+- Holiday: {context['holiday'] or 'none'}
+- Top news: {context['news']['top_headline'] or 'none'}
+- Stock market: S&P 500 {context['stock_market']['sentiment']} ({context['stock_market']['change_percent']}%)
+
+Generate exactly 4 lines, one per line, no labels, no quotes, no extra text:
+Line 1: A short, punchy headline (5-8 words)
+Line 2: A subheadline (8-15 words)
+Line 3: An announcement banner message (8-15 words)
+Line 4: A pull quote about the brand (15-25 words)
+
+Make the copy feel natural, energetic, and relevant to the current conditions. Reference the weather or conditions naturally without being overly literal. If there is a holiday, weave it into at least one line."""
+
+        response = openai_client.chat.completions.create(
+            model='gpt-4o-mini',
+            messages=[{'role': 'user', 'content': prompt}],
+            max_tokens=200,
+            temperature=0.8
+        )
+
+        lines = response.choices[0].message.content.strip().split('\n')
+        lines = [line.strip() for line in lines if line.strip()]
+
+        if len(lines) >= 4:
+            return {
+                'headline': lines[0],
+                'subheadline': lines[1],
+                'announcement': lines[2],
+                'pull_quote': lines[3],
+                'generated': True
+            }
+    except Exception as e:
+        print(f"[Ruuz] AI generation error: {e}")
+
+    return {
+        'headline': None,
+        'subheadline': None,
+        'announcement': None,
+        'pull_quote': None,
+        'generated': False
+    }
+
 
 @app.get('/')
 def home():
     return {
         'name': 'Ruuz Context API',
-        'version': '3.0',
+        'version': '4.0',
         'signals': ['weather', 'uv_index', 'air_quality', 'pollen', 'holidays', 'news', 'stock_market', 'sunrise_sunset', 'time_of_day'],
+        'ai': 'OpenAI GPT-4o-mini for dynamic headline generation',
         'status': 'running'
     }
 
 
 @app.get('/context')
-def get_context(lat: float, lon: float, country: str = 'US'):
+def get_context(lat: float, lon: float, country: str = 'US', ai: bool = True):
     """
-    Main endpoint. Returns all context signals for a given location.
-    One call, all signals.
+    Main endpoint. Returns all context signals + AI-generated copy.
+    Set ai=false to skip AI generation and save API costs.
     """
 
     # Collect all signals
@@ -305,7 +363,7 @@ def get_context(lat: float, lon: float, country: str = 'US'):
     if stock['sentiment'] == 'bearish' and stock['change_percent'] <= -2:
         alerts.append("Market downturn — check out our value picks")
 
-    # Clean weather response (remove internal timestamps)
+    # Clean weather response
     weather_clean = None
     if weather:
         weather_clean = {
@@ -319,20 +377,14 @@ def get_context(lat: float, lon: float, country: str = 'US'):
             'sunset': weather['sunset']
         }
 
-    return {
+    # Build context for AI
+    context = {
         'mood': mood,
         'time_of_day': time_of_day,
         'daylight': daylight,
-        'weather': weather_clean,
-        'uv': {
-            'index': uv,
-            'alert': uv_alert
-        },
-        'air_quality': {
-            'index': air['index'],
-            'label': air['label'],
-            'alert': air_alert
-        },
+        'weather': weather_clean or {'description': 'clear sky', 'temp': 70, 'feels_like': 70},
+        'uv': {'index': uv, 'alert': uv_alert},
+        'air_quality': {'index': air['index'], 'label': air['label'], 'alert': air_alert},
         'pollen': pollen,
         'holiday': holiday,
         'news': {
@@ -345,6 +397,15 @@ def get_context(lat: float, lon: float, country: str = 'US'):
         'alerts': alerts,
         'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     }
+
+    # Generate AI copy
+    ai_copy = {'generated': False}
+    if ai:
+        ai_copy = generate_ai_copy(context)
+
+    # Final response
+    context['ai_copy'] = ai_copy
+    return context
 
 
 @app.get('/news')
@@ -371,7 +432,7 @@ def get_stock():
 
 if __name__ == '__main__':
     import uvicorn
-    print('=== Ruuz Context API v3.0 ===')
+    print('=== Ruuz Context API v4.0 ===')
     print('Starting server on http://localhost:8000')
     print('API docs at http://localhost:8000/docs')
     print()
