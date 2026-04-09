@@ -9,7 +9,7 @@ Ruuz is a contextual commerce platform that dynamically adapts Shopify storefron
 When a customer visits a Ruuz-powered store, the engine collects environmental signals and adapts the entire storefront in real time:
 
 - **Announcement banner** — contextual messaging with tiered UV alerts, air quality warnings, pollen alerts, holiday greetings, low-visibility warnings, and market sentiment cues
-- **Hero section** — image, headline, and subheadline swap based on weather + time of day
+- **Hero section** — image, headline, and subheadline swap based on weather + time of day, with optional AI-generated copy unique to every visit
 - **Featured collection** — warm-weather products when sunny, waterproof gear when raining
 - **Pull quote** — brand messaging adapts to match the current context
 - **Media sections** — editorial images and copy change to match the mood
@@ -19,7 +19,7 @@ All transitions happen instantly on page load.
 
 ## How It Works
 
-Ruuz collects multiple environmental signals and combines them to determine what to show. The system has two layers: a FastAPI backend that collects all signals from a single endpoint, and a client-side JavaScript engine that applies the context to the storefront.
+Ruuz collects multiple environmental signals and combines them to determine what to show. The system has two layers: a FastAPI backend that collects all signals and generates AI-powered copy from a single endpoint, and a client-side JavaScript engine that applies the context to the storefront.
 
 **Backend signals (FastAPI):**
 
@@ -31,6 +31,7 @@ Ruuz collects multiple environmental signals and combines them to determine what
 6. **Public holidays** (Nager.Date) — holiday detection for 100+ countries
 7. **News** (GNews) — top national headlines
 8. **Stock market** (Alpha Vantage) — S&P 500 price, change, and consumer sentiment
+9. **AI copy generation** (OpenAI GPT-4o-mini) — unique headlines, subheadlines, announcements, and pull quotes generated per visit
 
 **Client-side signals:**
 
@@ -50,15 +51,17 @@ The backend processes all signals into a single JSON response. The engine applie
 7. Holiday → banner override
 8. Stock market → sentiment-based messaging if significant move
 9. Time of day → copy variation
+10. News → context for AI copy generation
+11. AI copy generation → unique headlines and messaging based on all signals
 
 ## Sections Adapted
 
 | Section | What Changes |
 |---------|-------------|
-| Announcement bar | Weather-specific messaging, UV and air quality alerts |
-| Hero | Image, headline, subheadline, CTA button |
+| Announcement bar | Weather messaging, UV alerts, air quality warnings, pollen alerts, holiday greetings, low-visibility warnings, market sentiment cues |
+| Hero | Image, AI-generated headline and subheadline, CTA button |
 | Featured collection | Sunshine Picks or Rainy Day Essentials |
-| Pull quote | Brand copy matching current context |
+| Pull quote | AI-generated brand copy matching current context |
 | Media with text | Images, headings, body copy, button links |
 
 ## Context Moods
@@ -79,6 +82,8 @@ The backend processes all signals into a single JSON response. The engine applie
 | Afternoon | Train Through the Rain | Stay dry and focused all afternoon |
 | Evening | Brave the Evening Downpour | Reflective, waterproof gear for after-dark runs |
 
+*These are the default fallback headlines. When AI generation is enabled, every visit receives a unique headline based on all context signals.*
+
 **Alert overrides** (take priority over mood messaging)
 
 | Condition | Banner Message |
@@ -88,7 +93,11 @@ The backend processes all signals into a single JSON response. The engine applie
 | UV index 8-10 | Very high UV — sun protection essential |
 | UV index 11+ | Extreme UV — avoid outdoor exposure |
 | Air quality Poor/Very Poor | Air quality alert — consider indoor workouts |
-| Multiple triggers | Both messages shown together |
+| High pollen | High pollen today — allergy-friendly gear recommended |
+| Before sunrise / after sunset | Low visibility — reflective gear recommended |
+| Holiday detected | Happy [holiday name] — celebrate with our latest picks |
+| Stock market drop 2%+ | Market downturn — check out our value picks |
+| Multiple triggers | All messages shown together |
 
 ## Tech Stack
 
@@ -137,7 +146,9 @@ Ruuz is designed as a proof of concept for a broader contextual commerce platfor
 
 **Merchant experience:** Zero-config mode that works with existing collections and assets immediately. Smart auto-tagging using ML-powered product classification that scans titles, descriptions, and tags to suggest context mappings. Data quality scoring offered as a free tool that gives merchants an actionable readiness report — not just a pass/fail score, but specific items to fix with direct links to each problem in their Shopify admin. Merchant dashboard for mapping triggers to collections without touching code.
 
-**LLM-powered content:** Dynamic headline and copy generation using the Anthropic or OpenAI API, trained on the merchant's existing content style. Instead of rotating through a fixed set of headlines, every visit generates a fresh, context-aware headline that fits the moment.
+**LLM-powered content (completed):** Dynamic headline and copy generation using the OpenAI API (GPT-4o-mini). The backend sends all context signals to the LLM, which generates a unique headline, subheadline, announcement, and pull quote for every visit. No two customers see the same copy.
+
+**AI brand voice training (future):** The next evolution of AI-generated content trains the LLM on each merchant's actual brand voice by analyzing their existing product descriptions, About page, marketing emails, and social media copy. Generated headlines and messaging will sound like the merchant wrote them, not generic. This also extends to auto-generating product descriptions, collection copy, and email subject lines based on real-time context, reducing the merchant's content workload while keeping their voice consistent across every customer touchpoint.
 
 **Tiered model:** Free tier with 2 mood mappings, basic weather and time signals, and the data quality scoring tool. Pro tier with unlimited moods, all signals, analytics dashboard, auto-tagging, and LLM-generated content. Enterprise tier with multi-store support, custom API integrations, and A/B testing to validate contextual commerce performance against static storefronts.
 
@@ -147,6 +158,6 @@ Ruuz is designed as a proof of concept for a broader contextual commerce platfor
 
 ## About
 
-Ruuz was built as a project while completing a Master's in Data Analytics (ML focus). The project demonstrates product thinking, real-time API integration, contextual personalization, full-stack development, data pipeline engineering, and ethical considerations applied to e-commerce.
+Ruuz was built as a project while completing a Master's in Data Analytics (ML focus). The project demonstrates product thinking, real-time API integration, contextual personalization, full-stack development, data pipeline engineering, AI-powered content generation, and ethical considerations applied to e-commerce.
 
 The name "Ruuz" is inspired by the Farsi word روز (rooz), meaning "day" — reflecting the engine's core function of adapting the shopping experience to the conditions of the day.
