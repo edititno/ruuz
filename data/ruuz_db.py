@@ -1,5 +1,5 @@
-# Ruuz Database & SQL Queries v2.0
-# Loads CSV data into SQLite with weather, UV, and air quality
+# Ruuz Database & SQL Queries v3.0
+# Loads CSV data into SQLite with weather, UV, air quality, and holidays
 
 import sqlite3
 import csv
@@ -19,6 +19,7 @@ def create_database():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             timestamp TEXT,
             city TEXT,
+            country TEXT,
             lat REAL,
             lon REAL,
             weather TEXT,
@@ -34,6 +35,7 @@ def create_database():
             air_quality INTEGER,
             air_quality_label TEXT,
             air_alert TEXT,
+            holiday TEXT,
             time_of_day TEXT,
             mood TEXT
         )
@@ -44,11 +46,12 @@ def create_database():
         for row in reader:
             cursor.execute('''
                 INSERT INTO weather_logs 
-                (timestamp, city, lat, lon, weather, weather_code, temp, feels_like, humidity, wind_speed, sunrise, sunset, uv_index, uv_alert, air_quality, air_quality_label, air_alert, time_of_day, mood)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                (timestamp, city, country, lat, lon, weather, weather_code, temp, feels_like, humidity, wind_speed, sunrise, sunset, uv_index, uv_alert, air_quality, air_quality_label, air_alert, holiday, time_of_day, mood)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
                 row['timestamp'],
                 row['city'],
+                row['country'],
                 float(row['lat']),
                 float(row['lon']),
                 row['weather'],
@@ -64,6 +67,7 @@ def create_database():
                 int(row['air_quality']),
                 row['air_quality_label'],
                 row['air_alert'],
+                row['holiday'],
                 row['time_of_day'],
                 row['mood']
             ))
@@ -93,7 +97,7 @@ def run_queries(conn):
     print()
 
     print('=== QUERY 3: Cities with High UV ===')
-    cursor.execute('SELECT city, uv_index, temp, weather FROM weather_logs WHERE uv_alert = "high" ORDER BY uv_index DESC')
+    cursor.execute('SELECT city, uv_index, temp, weather FROM weather_logs WHERE uv_alert IN ("high", "very-high", "extreme") ORDER BY uv_index DESC')
     rows = cursor.fetchall()
     if rows:
         for row in rows:
@@ -142,8 +146,24 @@ def run_queries(conn):
         print(f'  {row[0]}: {row[1]}% average humidity')
     print()
 
-    print('=== QUERY 10: Alert Summary ===')
-    cursor.execute('SELECT city, COUNT(*) as alerts FROM weather_logs WHERE uv_alert = "high" OR air_alert = "poor" GROUP BY city ORDER BY alerts DESC')
+    print('=== QUERY 10: UV Alert Distribution ===')
+    cursor.execute('SELECT uv_alert, COUNT(*) as count FROM weather_logs GROUP BY uv_alert ORDER BY count DESC')
+    for row in cursor.fetchall():
+        print(f'  {row[0]}: {row[1]} records')
+    print()
+
+    print('=== QUERY 11: Holiday Records ===')
+    cursor.execute('SELECT city, holiday, mood, temp FROM weather_logs WHERE holiday != "none"')
+    rows = cursor.fetchall()
+    if rows:
+        for row in rows:
+            print(f'  {row[0]}: {row[1]} | {row[2]} | {row[3]}F')
+    else:
+        print('  No holiday records yet (run logger on a public holiday to capture)')
+    print()
+
+    print('=== QUERY 12: Full Alert Summary ===')
+    cursor.execute('SELECT city, COUNT(*) as alerts FROM weather_logs WHERE uv_alert IN ("high", "very-high", "extreme") OR air_alert = "poor" OR holiday != "none" GROUP BY city ORDER BY alerts DESC')
     rows = cursor.fetchall()
     if rows:
         for row in rows:
@@ -153,7 +173,7 @@ def run_queries(conn):
     print()
 
 def main():
-    print('=== Ruuz Database & SQL Queries v2.0 ===')
+    print('=== Ruuz Database & SQL Queries v3.0 ===')
     print()
 
     if not os.path.exists(CSV_FILE):
