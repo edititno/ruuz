@@ -1,21 +1,11 @@
-timestamp,city,lat,lon,weather,weather_code,temp,feels_like,humidity,wind_speed,sunrise,sunset,uv_index,uv_alert,air_quality,air_quality_label,air_alert,time_of_day,mood
-2026-04-08 16:24:43,Washington DC,38.9072,-77.0369,clear sky,800,58,55,27,7,06:41,19:37,4.8,normal,3,Moderate,good,afternoon,sunny
-2026-04-08 16:24:44,New York,40.7128,-74.006,clear sky,800,50,46,25,9,06:28,19:27,4.3,normal,3,Moderate,good,afternoon,sunny
-2026-04-08 16:24:46,Los Angeles,34.0522,-118.2437,clear sky,800,78,77,36,9,09:30,22:18,7.7,high,2,Fair,good,afternoon,sunny
-2026-04-08 16:24:47,Chicago,41.8781,-87.6298,overcast clouds,804,67,65,40,16,07:21,20:22,4.6,normal,3,Moderate,good,afternoon,rainy
-2026-04-08 16:24:48,Miami,25.7617,-80.1918,broken clouds,803,77,78,74,16,07:04,19:40,5.5,normal,2,Fair,good,afternoon,rainy
-2026-04-08 16:24:50,Seattle,47.6062,-122.3321,clear sky,800,58,56,52,4,09:33,22:48,5.8,normal,3,Moderate,good,afternoon,sunny
-2026-04-08 16:24:51,Denver,39.7392,-104.9903,broken clouds,803,68,66,27,11,08:32,21:30,4.8,normal,2,Fair,good,afternoon,rainy
-2026-04-08 16:24:53,Atlanta,33.749,-84.388,overcast clouds,804,68,66,36,12,07:15,20:02,5.2,normal,3,Moderate,good,afternoon,rainy
-2026-04-08 16:24:54,Boston,42.3601,-71.0589,clear sky,800,42,38,47,7,06:14,19:17,4.0,normal,3,Moderate,good,afternoon,sunny
-2026-04-08 16:24:55,Phoenix,33.4484,-112.074,clear sky,800,89,85,10,1,09:06,21:53,7.9,high,4,Poor,poor,afternoon,sunny
-2026-04-08 16:35:46,Washington DC,38.9072,-77.0369,clear sky,800,56,53,27,7,06:41,19:37,4.3,normal,3,Moderate,good,afternoon,sunny
-2026-04-08 16:35:48,New York,40.7128,-74.006,clear sky,800,47,42,31,12,06:28,19:27,3.9,normal,3,Moderate,good,afternoon,sunny
-2026-04-08 16:35:49,Los Angeles,34.0522,-118.2437,clear sky,800,78,77,36,9,09:30,22:18,7.7,high,2,Fair,good,afternoon,sunny
-2026-04-08 16:35:50,Chicago,41.8781,-87.6298,overcast clouds,804,67,66,40,16,07:21,20:22,4.3,normal,3,Moderate,good,afternoon,rainy
-2026-04-08 16:35:52,Miami,25.7617,-80.1918,broken clouds,803,74,75,74,16,07:04,19:40,4.8,normal,2,Fair,good,afternoon,rainy
-2026-04-08 16:35:53,Seattle,47.6062,-122.3321,clear sky,800,58,56,50,4,09:33,22:48,5.9,normal,3,Moderate,good,afternoon,sunny
-2026-04-08 16:35:55,Denver,39.7392,-104.9903,broken clouds,803,68,66,28,11,08:32,21:30,4.8,normal,2,Fair,good,afternoon,rainy
-2026-04-08 16:35:56,Atlanta,33.749,-84.388,overcast clouds,804,68,66,34,12,07:15,20:02,4.8,normal,3,Moderate,good,afternoon,rainy
-2026-04-08 16:35:58,Boston,42.3601,-71.0589,clear sky,800,41,36,39,7,06:14,19:17,3.5,normal,3,Moderate,good,afternoon,sunny
-2026-04-08 16:35:59,Phoenix,33.4484,-112.074,clear sky,800,89,85,10,1,09:06,21:53,7.8,high,4,Poor,poor,afternoon,sunny
+timestamp,city,country,lat,lon,weather,weather_code,temp,feels_like,humidity,wind_speed,sunrise,sunset,uv_index,uv_alert,air_quality,air_quality_label,air_alert,holiday,time_of_day,mood
+2026-04-09 13:46:53,Washington DC,US,38.9072,-77.0369,broken clouds,803,61,59,38,7,06:40,19:38,6.7,high,3,Moderate,good,none,afternoon,rainy
+2026-04-09 13:46:54,New York,US,40.7128,-74.006,few clouds,801,53,50,50,13,06:26,19:28,6.5,high,3,Moderate,good,none,afternoon,sunny
+2026-04-09 13:46:56,Los Angeles,US,34.0522,-118.2437,overcast clouds,804,71,71,56,6,09:29,22:19,4.9,moderate,2,Fair,good,none,afternoon,rainy
+2026-04-09 13:46:57,Chicago,US,41.8781,-87.6298,scattered clouds,802,66,65,39,2,07:19,20:24,6.2,high,2,Fair,good,none,afternoon,sunny
+2026-04-09 13:46:59,Miami,US,25.7617,-80.1918,overcast clouds,804,78,79,78,20,07:03,19:40,7.1,high,2,Fair,good,none,afternoon,rainy
+2026-04-09 13:47:00,Seattle,US,47.6062,-122.3321,broken clouds,803,55,53,57,6,09:31,22:49,3.9,moderate,2,Fair,good,none,afternoon,rainy
+2026-04-09 13:47:02,Denver,US,39.7392,-104.9903,broken clouds,803,67,65,26,7,08:31,21:31,6.3,high,2,Fair,good,none,afternoon,rainy
+2026-04-09 13:47:03,Atlanta,US,33.749,-84.388,broken clouds,803,67,64,28,9,07:14,20:03,7.4,high,3,Moderate,good,none,afternoon,rainy
+2026-04-09 13:47:04,Boston,US,42.3601,-71.0589,clear sky,800,57,54,24,11,06:13,19:18,6.3,high,3,Moderate,good,none,afternoon,sunny
+2026-04-09 13:47:06,Phoenix,US,33.4484,-112.074,scattered clouds,802,86,83,12,5,09:05,21:54,5.9,moderate,3,Moderate,good,none,afternoon,sunny
