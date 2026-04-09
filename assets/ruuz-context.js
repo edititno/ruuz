@@ -1,7 +1,7 @@
 /*
- * Ruuz Context Engine v0.6 (Rebel Theme - Full Integration)
+ * Ruuz Context Engine v0.7 (Rebel Theme - Full Integration)
  * Adapts: banner, hero, collections, pull quote, media sections
- * Signals: weather, time of day, IP geolocation, UV index, air quality
+ * Signals: weather, time of day, IP geolocation, UV index, air quality, public holidays
  */
 
 (function () {
@@ -11,6 +11,7 @@
     apiKey: 'YOUR_KEY_HERE',
     defaultLat: 38.9072,
     defaultLon: -77.0369,
+    defaultCountry: 'US',
 
     images: {
       sunny: {
@@ -97,6 +98,12 @@
     }
   };
 
+  // Store context data globally so holiday check can access it
+  var CONTEXT = {
+    countryCode: null,
+    holiday: null
+  };
+
   function getTimeOfDay() {
     var hour = new Date().getHours();
     if (hour >= 5 && hour < 12) return 'morning';
@@ -131,6 +138,39 @@
     }
   }
 
+  function fetchHoliday(countryCode, callback) {
+    var today = new Date();
+    var year = today.getFullYear();
+    var month = String(today.getMonth() + 1).padStart(2, '0');
+    var day = String(today.getDate()).padStart(2, '0');
+    var todayStr = year + '-' + month + '-' + day;
+
+    var url = 'https://date.nager.at/api/v3/PublicHolidays/' + year + '/' + countryCode;
+
+    fetch(url)
+      .then(function (res) { return res.json(); })
+      .then(function (holidays) {
+        var todayHoliday = null;
+        for (var i = 0; i < holidays.length; i++) {
+          if (holidays[i].date === todayStr) {
+            todayHoliday = holidays[i];
+            break;
+          }
+        }
+        if (todayHoliday) {
+          console.log('[Ruuz] Holiday detected: ' + todayHoliday.localName + ' (' + countryCode + ')');
+          CONTEXT.holiday = todayHoliday;
+        } else {
+          console.log('[Ruuz] No holiday today in ' + countryCode);
+        }
+        callback(todayHoliday);
+      })
+      .catch(function () {
+        console.log('[Ruuz] Holiday check failed for ' + countryCode);
+        callback(null);
+      });
+  }
+
   function applyMood(mood, uvIndex, airQuality) {
     var timeOfDay = getTimeOfDay();
     var moodConfig = CONFIG.moods[mood];
@@ -140,7 +180,7 @@
     document.body.setAttribute('data-ruuz-mood', mood);
     document.body.setAttribute('data-ruuz-time', timeOfDay);
 
-    // 1. ANNOUNCEMENT BANNER (default mood message, may be overridden by alerts)
+    // 1. ANNOUNCEMENT BANNER (default mood message, may be overridden by alerts or holidays)
     var announcements = document.querySelectorAll('.announcement-bar__text');
     for (var i = 0; i < announcements.length; i++) {
       announcements[i].textContent = timeConfig.announcement;
@@ -279,6 +319,19 @@
       document.body.setAttribute('data-ruuz-air', 'good');
     }
 
+    // 9. HOLIDAY OVERRIDE (highest priority for banner)
+    if (CONTEXT.holiday) {
+      var holidayMessage = 'Happy ' + CONTEXT.holiday.localName + ' — celebrate with our latest picks';
+      document.body.setAttribute('data-ruuz-holiday', CONTEXT.holiday.localName);
+
+      if (alertMessages.length > 0) {
+        alertMessages.unshift(holidayMessage);
+      } else {
+        alertMessages.push(holidayMessage);
+      }
+      console.log('[Ruuz] Holiday banner: ' + holidayMessage);
+    }
+
     if (alertMessages.length > 0) {
       var alertAnnouncements = document.querySelectorAll('.announcement-bar__text');
       for (var k = 0; k < alertAnnouncements.length; k++) {
@@ -298,6 +351,8 @@
     console.log('[Ruuz] Collection: ' + (mood === 'rainy' ? 'Rainy Day Essentials' : 'Sunshine Picks'));
     console.log('[Ruuz] UV Index: ' + (uvIndex || 0));
     console.log('[Ruuz] Air Quality: ' + (airQuality || 1) + '/5');
+    console.log('[Ruuz] Holiday: ' + (CONTEXT.holiday ? CONTEXT.holiday.localName : 'none'));
+    console.log('[Ruuz] Country: ' + (CONTEXT.countryCode || 'unknown'));
     console.log('[Ruuz] --------------------------');
   }
 
@@ -347,7 +402,9 @@
 
           fetchUV(lat, lon, function (uv) {
             fetchAirQuality(lat, lon, function (aqi) {
-              applyMood(mood, uv, aqi);
+              fetchHoliday(CONTEXT.countryCode || CONFIG.defaultCountry, function () {
+                applyMood(mood, uv, aqi);
+              });
             });
           });
         }
@@ -363,7 +420,8 @@
       .then(function (res) { return res.json(); })
       .then(function (data) {
         if (data.latitude && data.longitude) {
-          console.log('[Ruuz] IP location detected: ' + data.city + ', ' + data.region);
+          console.log('[Ruuz] IP location detected: ' + data.city + ', ' + data.region + ', ' + data.country_code);
+          CONTEXT.countryCode = data.country_code;
           fetchWeather(data.latitude, data.longitude);
         } else {
           console.log('[Ruuz] IP location failed, using default (DC)');
@@ -377,12 +435,13 @@
   }
 
   function init() {
-    console.log('[Ruuz] Context Engine v0.6 starting...');
+    console.log('[Ruuz] Context Engine v0.7 starting...');
 
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         function (pos) {
           console.log('[Ruuz] Browser location detected');
+          CONTEXT.countryCode = CONFIG.defaultCountry;
           fetchWeather(pos.coords.latitude, pos.coords.longitude);
         },
         function () {
