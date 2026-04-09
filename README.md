@@ -90,6 +90,7 @@ The engine processes these signals and applies a "mood" (sunny or rainy) combine
 - **OpenWeatherMap Air Pollution API** — Air quality index data
 - **Open-Meteo API** — UV index data (free, no key required)
 - **ipapi.co** — IP-based geolocation fallback (no browser permission needed)
+- **Nager.Date API** — Public holiday detection for 100+ countries (free, no key required)
 - **HTML/CSS** — Responsive rainy collection layout
 - **Figma** — UI/UX design and mockups
 
