@@ -1,5 +1,5 @@
-# Ruuz Analytics Dashboard v2.0
-# Visual dashboard with weather, UV, and air quality data
+# Ruuz Analytics Dashboard v3.0
+# Visual dashboard with weather, UV, air quality, and holiday data
 
 import streamlit as st
 import pandas as pd
@@ -28,8 +28,8 @@ col1.metric('Total Records', len(df))
 col2.metric('Cities', df['city'].nunique())
 col3.metric('Sunny Moods', len(df[df['mood'] == 'sunny']))
 col4.metric('Rainy Moods', len(df[df['mood'] == 'rainy']))
-col5.metric('UV Alerts', len(df[df['uv_alert'] == 'high']))
-col6.metric('Air Alerts', len(df[df['air_alert'] == 'poor']))
+col5.metric('UV Alerts', len(df[df['uv_alert'].isin(['high', 'very-high', 'extreme'])]))
+col6.metric('Holidays', len(df[df['holiday'] != 'none']))
 
 st.markdown('---')
 
@@ -58,19 +58,19 @@ with left2:
     st.bar_chart(avg_uv)
 
 with right2:
-    st.markdown('### Air Quality Distribution')
-    air_dist = df['air_quality_label'].value_counts()
-    st.bar_chart(air_dist)
+    st.markdown('### UV Alert Distribution')
+    uv_dist = df['uv_alert'].value_counts()
+    st.bar_chart(uv_dist)
 
 st.markdown('---')
 
-# Row 3: Humidity and Wind
+# Row 3: Air Quality and Wind
 left3, right3 = st.columns(2)
 
 with left3:
-    st.markdown('### Average Humidity by Mood')
-    humidity_by_mood = df.groupby('mood')['humidity'].mean()
-    st.bar_chart(humidity_by_mood)
+    st.markdown('### Air Quality Distribution')
+    air_dist = df['air_quality_label'].value_counts()
+    st.bar_chart(air_dist)
 
 with right3:
     st.markdown('### Average Wind Speed by City')
@@ -79,26 +79,61 @@ with right3:
 
 st.markdown('---')
 
+# Row 4: Humidity
+st.markdown('### Average Humidity by Mood')
+left4, right4 = st.columns(2)
+
+with left4:
+    humidity_by_mood = df.groupby('mood')['humidity'].mean()
+    st.bar_chart(humidity_by_mood)
+
+with right4:
+    st.markdown('#### Humidity Insight')
+    rainy_humidity = df[df['mood'] == 'rainy']['humidity'].mean()
+    sunny_humidity = df[df['mood'] == 'sunny']['humidity'].mean()
+    if len(df) > 0:
+        st.write(f'Rainy mood avg humidity: {rainy_humidity:.0f}%')
+        st.write(f'Sunny mood avg humidity: {sunny_humidity:.0f}%')
+        st.write(f'Difference: {abs(rainy_humidity - sunny_humidity):.0f}%')
+
+st.markdown('---')
+
 # Alert table
-st.markdown('### Alert Records')
-alerts = df[(df['uv_alert'] == 'high') | (df['air_alert'] == 'poor')]
+st.markdown('### Alert Records (UV, Air Quality, Holidays)')
+alerts = df[(df['uv_alert'].isin(['high', 'very-high', 'extreme'])) | (df['air_alert'] == 'poor') | (df['holiday'] != 'none')]
 if len(alerts) > 0:
-    st.dataframe(alerts[['timestamp', 'city', 'temp', 'uv_index', 'uv_alert', 'air_quality_label', 'air_alert', 'mood']], use_container_width=True)
+    st.dataframe(alerts[['timestamp', 'city', 'country', 'temp', 'uv_index', 'uv_alert', 'air_quality_label', 'air_alert', 'holiday', 'mood']], use_container_width=True)
 else:
-    st.info('No UV or air quality alerts recorded yet.')
+    st.info('No alerts recorded yet.')
+
+st.markdown('---')
+
+# Holiday section
+st.markdown('### Holiday Records')
+holidays = df[df['holiday'] != 'none']
+if len(holidays) > 0:
+    st.dataframe(holidays[['timestamp', 'city', 'country', 'holiday', 'weather', 'temp', 'mood']], use_container_width=True)
+else:
+    st.info('No holidays recorded yet. Run the logger on a public holiday to capture data.')
 
 st.markdown('---')
 
 # Full data explorer
 st.markdown('### Explore the Data')
-selected_mood = st.selectbox('Filter by mood:', ['All', 'sunny', 'rainy'])
 
-if selected_mood == 'All':
-    filtered_df = df
-else:
-    filtered_df = df[df['mood'] == selected_mood]
+filter_col1, filter_col2 = st.columns(2)
+with filter_col1:
+    selected_mood = st.selectbox('Filter by mood:', ['All', 'sunny', 'rainy'])
+with filter_col2:
+    selected_city = st.selectbox('Filter by city:', ['All'] + sorted(df['city'].unique().tolist()))
 
-st.dataframe(filtered_df[['timestamp', 'city', 'weather', 'temp', 'feels_like', 'humidity', 'wind_speed', 'uv_index', 'uv_alert', 'air_quality_label', 'air_alert', 'time_of_day', 'mood']], use_container_width=True)
+filtered_df = df.copy()
+if selected_mood != 'All':
+    filtered_df = filtered_df[filtered_df['mood'] == selected_mood]
+if selected_city != 'All':
+    filtered_df = filtered_df[filtered_df['city'] == selected_city]
+
+st.dataframe(filtered_df[['timestamp', 'city', 'country', 'weather', 'temp', 'feels_like', 'humidity', 'wind_speed', 'uv_index', 'uv_alert', 'air_quality_label', 'air_alert', 'holiday', 'time_of_day', 'mood']], use_container_width=True)
 
 st.markdown('---')
-st.markdown(f'*Dashboard v2.0 — {len(df)} records across {df["city"].nunique()} cities — signals: weather, UV index, air quality*')
+st.markdown(f'*Dashboard v3.0 — {len(df)} records across {df["city"].nunique()} cities — signals: weather, UV index, air quality, holidays*')
