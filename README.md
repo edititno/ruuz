@@ -134,6 +134,8 @@ ruuz/
 │   ├── ruuz_data_sample.csv
 │   ├── ruuz_db.py
 │   └── ruuz_logger.py
+├── quality/
+│   └── ruuz_quality.py
 ├── sections/
 │   └── ruuz-rainy.liquid
 └── README.md
@@ -144,7 +146,7 @@ Ruuz is designed as a proof of concept for a broader contextual commerce platfor
 
 **Signal expansion (completed):** Weather, UV index, air quality, pollen, IP geolocation, public holidays, sunrise/sunset timing, national news, and stock market sentiment. Future additions include local news by city, sports scores, and social media trending topics.
 
-**Merchant experience:** Zero-config mode that works with existing collections and assets immediately. Smart auto-tagging using ML-powered product classification that scans titles, descriptions, and tags to suggest context mappings. Data quality scoring offered as a free tool that gives merchants an actionable readiness report — not just a pass/fail score, but specific items to fix with direct links to each problem in their Shopify admin. Merchant dashboard for mapping triggers to collections without touching code.
+**Merchant experience:** Zero-config mode that works with existing collections and assets immediately. Smart auto-tagging using ML-powered product classification that scans titles, descriptions, and tags to suggest context mappings. **Data quality scoring (completed)** — a free Python tool that analyzes Shopify product exports and generates a weighted readiness score across 16 checks spanning critical fields (images, descriptions, pricing), high-importance fields (SKUs, inventory, SEO, tags), medium-importance fields (shipping weight, compare-at price), and minor fields (barcodes, categorization, duplicates). Merchants get an actionable report with specific items to fix, prioritized by impact. Merchant dashboard for mapping triggers to collections without touching code.
 
 **LLM-powered content (completed):** Dynamic headline and copy generation using the OpenAI API (GPT-4o-mini). The backend sends all context signals to the LLM, which generates a unique headline, subheadline, announcement, and pull quote for every visit. No two customers see the same copy.
 
