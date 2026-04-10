@@ -24,7 +24,7 @@ Ruuz collects multiple environmental signals and combines them to determine what
 **Backend signals (FastAPI):**
 
 1. **Weather** (OpenWeatherMap) — current conditions, temperature, humidity, wind
-2. **UV index** (Open-Meteo) — real-time ultraviolet radiation level
+2. **UV index** (Open-Meteo) — real-time UV radiation level
 3. **Air quality** (OpenWeatherMap) — air pollution index
 4. **Pollen** (Open-Meteo) — grass, birch, and ragweed levels
 5. **Sunrise/sunset** (OpenWeatherMap) — daylight status and golden hour detection
