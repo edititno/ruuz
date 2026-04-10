@@ -262,30 +262,40 @@ Current conditions:
 - Top news: {context['news']['top_headline'] or 'none'}
 - Stock market: S&P 500 {context['stock_market']['sentiment']} ({context['stock_market']['change_percent']}%)
 
-Generate exactly 4 lines, one per line, no labels, no quotes, no extra text:
-Line 1: A short, punchy headline (5-8 words)
-Line 2: A subheadline (8-15 words)
+Generate exactly 9 lines, one per line, no labels, no quotes, no extra text:
+Line 1: A short, punchy hero headline (5-8 words)
+Line 2: A hero subheadline (8-15 words)
 Line 3: An announcement banner message (8-15 words)
 Line 4: A pull quote about the brand (15-25 words)
+Line 5: Media section 1 heading (3-6 words)
+Line 6: Media section 1 description (10-18 words)
+Line 7: Media section 2 heading (3-6 words)
+Line 8: Media section 2 description (10-18 words)
+Line 9: A short ribbon banner message (4-8 words)
 
 Make the copy feel natural, energetic, and relevant to the current conditions. Reference the weather or conditions naturally without being overly literal. If there is a holiday, weave it into at least one line. CRITICAL RULES: Never invent prices, discounts, percentages off, sales, promo codes, or specific dollar amounts. Never mention shipping promotions. The merchant controls all pricing and offers. Stick to lifestyle and product benefit messaging only."""
         
         response = openai_client.chat.completions.create(
             model='gpt-4o-mini',
             messages=[{'role': 'user', 'content': prompt}],
-            max_tokens=200,
+            max_tokens=400,
             temperature=0.8
         )
 
         lines = response.choices[0].message.content.strip().split('\n')
         lines = [line.strip() for line in lines if line.strip()]
 
-        if len(lines) >= 4:
+        if len(lines) >= 9:
             return {
                 'headline': lines[0],
                 'subheadline': lines[1],
                 'announcement': lines[2],
                 'pull_quote': lines[3],
+                'media1_heading': lines[4],
+                'media1_text': lines[5],
+                'media2_heading': lines[6],
+                'media2_text': lines[7],
+                'ribbon': lines[8],
                 'generated': True
             }
     except Exception as e:
@@ -296,6 +306,11 @@ Make the copy feel natural, energetic, and relevant to the current conditions. R
         'subheadline': None,
         'announcement': None,
         'pull_quote': None,
+        'media1_heading': None,
+        'media1_text': None,
+        'media2_heading': None,
+        'media2_text': None,
+        'ribbon': None,
         'generated': False
     }
 
