@@ -18,11 +18,12 @@ app.add_middleware(
     allow_headers=['*'],
 )
 
-# API Keys
-OPENWEATHER_KEY = 'YOUR_OPENWEATHERMAP_API_KEY'
-GNEWS_KEY = 'YOUR_GNEWS_API_KEY'
-ALPHAVANTAGE_KEY = 'YOUR_ALPHAVANTAGE_API_KEY'
-OPENAI_KEY = 'YOUR_OPENAI_API_KEY'
+# API Keys — loaded from environment variables (Railway or local)
+import os
+OPENWEATHER_KEY = os.environ.get('OPENWEATHER_KEY', '')
+GNEWS_KEY = os.environ.get('GNEWS_KEY', '')
+ALPHAVANTAGE_KEY = os.environ.get('ALPHAVANTAGE_KEY', '')
+OPENAI_KEY = os.environ.get('OPENAI_KEY', '')
 
 openai_client = OpenAI(api_key=OPENAI_KEY)
 
