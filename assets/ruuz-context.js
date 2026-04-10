@@ -137,6 +137,12 @@
     // 6. MEDIA SECTION 1
     var mediaSection1 = document.querySelector('[id*="media_with_content_xMM9EF"]');
     if (mediaSection1) {
+      var heading1 = mediaSection1.querySelector('h2');
+      if (heading1 && ai.media1_heading) heading1.textContent = ai.media1_heading;
+
+      var texts1 = mediaSection1.querySelectorAll('rte-formatter p, .rte p');
+      if (texts1.length > 0 && ai.media1_text) texts1[0].textContent = ai.media1_text;
+
       swapAllImages(mediaSection1, images.media1);
       var btn1 = mediaSection1.querySelector('a.button, a[class*="button"]');
       if (btn1) btn1.href = btn.link;
@@ -145,6 +151,12 @@
     // 7. MEDIA SECTION 2
     var mediaSection2 = document.querySelector('[id*="media_with_content_nrnzPh"]');
     if (mediaSection2) {
+      var heading2 = mediaSection2.querySelector('h2');
+      if (heading2 && ai.media2_heading) heading2.textContent = ai.media2_heading;
+
+      var texts2 = mediaSection2.querySelectorAll('rte-formatter p, .rte p');
+      if (texts2.length > 0 && ai.media2_text) texts2[0].textContent = ai.media2_text;
+
       swapAllImages(mediaSection2, images.media2);
       var btn2 = mediaSection2.querySelector('a.button, a[class*="button"]');
       if (btn2) btn2.href = btn.link;
@@ -157,12 +169,33 @@
     console.log('[Ruuz] AI Subheadline: ' + (ai.subheadline || 'fallback'));
     console.log('[Ruuz] AI Announcement: ' + (ai.announcement || 'fallback'));
     console.log('[Ruuz] AI Pull Quote: ' + (ai.pull_quote || 'fallback'));
+    console.log('[Ruuz] AI Media 1: ' + (ai.media1_heading || 'fallback') + ' / ' + (ai.media1_text || 'fallback'));
+    console.log('[Ruuz] AI Media 2: ' + (ai.media2_heading || 'fallback') + ' / ' + (ai.media2_text || 'fallback'));
+    console.log('[Ruuz] AI Ribbon: ' + (ai.ribbon || 'fallback'));
     console.log('[Ruuz] Alerts: ' + alerts.join(' | '));
     console.log('[Ruuz] News: ' + (data.news.top_headline || 'none'));
     console.log('[Ruuz] Stock: ' + data.stock_market.sentiment + ' (' + data.stock_market.change_percent + '%)');
     console.log('[Ruuz] -------------------------------');
-  }
+  
+    // 8. MARQUEE (live data ticker — 6 different signals)
+    var marquee = document.querySelector('marquee-component');
+    if (marquee) {
+      var tickerMessages = [
+        ai.ribbon || 'Empowering women to move freely and confidently',
+        data.weather.temp + '°F ' + data.weather.description,
+        'UV Index ' + data.uv.index + ' (' + data.uv.alert + ')',
+        'Air Quality: ' + data.air_quality.label + ' (' + data.air_quality.index + '/5)',
+        data.news.top_headline ? data.news.top_headline + ' — ' + data.news.source : 'Stay informed, stay active',
+        'Market: S&P 500 ' + data.stock_market.sentiment + ' (' + data.stock_market.change_percent + '%)'
+      ];
 
+      var marqueeTexts = marquee.querySelectorAll('.text-block p');
+      for (var m = 0; m < marqueeTexts.length; m++) {
+        marqueeTexts[m].textContent = tickerMessages[m % tickerMessages.length];
+      }
+    }
+  }
+  
   function callBackend(lat, lon, country) {
     var url = BACKEND_URL + '/context?lat=' + lat + '&lon=' + lon + '&country=' + country;
     console.log('[Ruuz] Calling backend: ' + url);
