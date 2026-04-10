@@ -4,6 +4,15 @@ Ruuz is a contextual commerce platform that dynamically adapts Shopify storefron
 
 **Core thesis:** Ruuz doesn't decide WHO the customer is. It decides WHAT MOMENT the customer is in. The persona stays the same. The context changes.
 
+## Live Demo
+
+The Ruuz Context API is deployed and live at:
+**https://web-production-2b083.up.railway.app**
+
+- API root: `/`
+- Main context endpoint: `/context?lat=38.9072&lon=-77.0369&country=US`
+- Auto-generated API docs: `/docs`
+
 ## What It Does
 
 When a customer visits a Ruuz-powered store, the engine collects environmental signals and adapts the entire storefront in real time:
