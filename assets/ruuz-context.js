@@ -1,122 +1,34 @@
 /*
- * Ruuz Context Engine v0.7 (Rebel Theme - Full Integration)
- * Adapts: banner, hero, collections, pull quote, media sections
- * Signals: weather, time of day, IP geolocation, UV index, air quality, public holidays
+ * Ruuz Context Engine v1.0 (Live Backend Integration)
+ * Calls deployed FastAPI backend at Railway for all signals + AI-generated copy
+ * Backend: https://web-production-2b083.up.railway.app
  */
 
 (function () {
   'use strict';
 
-  var CONFIG = {
-    apiKey: 'YOUR_KEY_HERE',
-    defaultLat: 38.9072,
-    defaultLon: -77.0369,
-    defaultCountry: 'US',
+  var BACKEND_URL = 'https://web-production-2b083.up.railway.app';
+  var DEFAULT_LAT = 38.9072;
+  var DEFAULT_LON = -77.0369;
+  var DEFAULT_COUNTRY = 'US';
 
-    images: {
-      sunny: {
-        hero: 'https://cdn.shopify.com/s/files/1/0988/6964/1498/files/The_sunny_hero_image.jpg?v=1774908302',
-        media1: 'https://cdn.shopify.com/s/files/1/0988/6964/1498/files/sunny_day1.jpg?v=1774898045',
-        media2: 'https://cdn.shopify.com/s/files/1/0988/6964/1498/files/sunny_day_2.png?v=1774908442'
-      },
-      rainy: {
-        hero: 'https://cdn.shopify.com/s/files/1/0988/6964/1498/files/The_rainy_hero_image.jpg?v=1774908322',
-        media1: 'https://cdn.shopify.com/s/files/1/0988/6964/1498/files/rainy_day_1.png?v=1774908455',
-        media2: 'https://cdn.shopify.com/s/files/1/0988/6964/1498/files/rainy_day_2.jpg?v=1774908558'
-      }
+  var IMAGES = {
+    sunny: {
+      hero: 'https://cdn.shopify.com/s/files/1/0988/6964/1498/files/The_sunny_hero_image.jpg?v=1774908302',
+      media1: 'https://cdn.shopify.com/s/files/1/0988/6964/1498/files/sunny_day1.jpg?v=1774898045',
+      media2: 'https://cdn.shopify.com/s/files/1/0988/6964/1498/files/sunny_day_2.png?v=1774908442'
     },
-
-    moods: {
-      sunny: {
-        buttonText: 'Shop Sunshine Picks',
-        buttonLink: '/collections/sunshine-picks',
-        morning: {
-          headline: 'Start Your Morning Strong',
-          subheadline: 'Lightweight gear to power your sunrise session',
-          announcement: 'Perfect morning for an outdoor run — shop sun-ready gear',
-          pullQuote: 'When the sun is out, so are we. Gear built for women who train without limits.',
-          media1Heading: 'Superior Comfort',
-          media1Text: 'Breathable fabrics that keep you cool and dry through your morning workout.',
-          media2Heading: 'Performance Redefined',
-          media2Text: 'Lightweight layers designed to flex, stretch, and move with every rep.'
-        },
-        afternoon: {
-          headline: 'Crush Your Afternoon Session',
-          subheadline: 'Breathable layers for peak-heat training',
-          announcement: 'It\'s warm out there — stay cool with our lightweight picks',
-          pullQuote: 'Afternoon heat calls for breathable, sweat-wicking gear designed to move with you.',
-          media1Heading: 'Beat the Heat',
-          media1Text: 'Ultra-light moisture-wicking fabrics that keep you cool when the temperature climbs.',
-          media2Heading: 'Built to Perform',
-          media2Text: 'From HIIT to hot yoga, our activewear handles the heat so you can focus on your goals.'
-        },
-        evening: {
-          headline: 'End the Day Right',
-          subheadline: 'Comfortable fits for your sunset cooldown',
-          announcement: 'Beautiful evening ahead — gear up for a sunset session',
-          pullQuote: 'Wind down your day with comfortable performance wear that transitions from workout to life.',
-          media1Heading: 'Sunset Ready',
-          media1Text: 'Comfortable fits that take you from your evening run to dinner without missing a beat.',
-          media2Heading: 'Effortless Style',
-          media2Text: 'Performance wear that looks as good after the workout as it does during. No compromises.'
-        }
-      },
-      rainy: {
-        buttonText: 'Shop Rainy Day Essentials',
-        buttonLink: '/collections/rainy-day-essentials',
-        morning: {
-          headline: 'Own the Morning Storm',
-          subheadline: 'Waterproof layers to start the day right',
-          announcement: 'Rain today — stay dry with our waterproof collection',
-          pullQuote: 'Rain doesn\'t cancel training. Our waterproof layers keep you moving through any forecast.',
-          media1Heading: 'Storm Protection',
-          media1Text: 'Sealed seams and waterproof shells that block the rain without trapping heat.',
-          media2Heading: 'Grip and Go',
-          media2Text: 'Wet weather demands gear that stays put. No slipping, no soaking, no excuses.'
-        },
-        afternoon: {
-          headline: 'Train Through the Rain',
-          subheadline: 'Stay dry and focused all afternoon',
-          announcement: 'Wet weather outside — shop rainy day essentials',
-          pullQuote: 'Built for women who don\'t check the weather before they train. Waterproof. Windproof. Unstoppable.',
-          media1Heading: 'Stay Dry, Stay Moving',
-          media1Text: 'Water-resistant layers that let you push through afternoon downpours without slowing down.',
-          media2Heading: 'All-Weather Training',
-          media2Text: 'Our activewear is tested in the worst conditions so you can perform at your best in any weather.'
-        },
-        evening: {
-          headline: 'Brave the Evening Downpour',
-          subheadline: 'Reflective, waterproof gear for after-dark runs',
-          announcement: 'Rainy night? Stay visible with reflective waterproof gear',
-          pullQuote: 'When the sky goes dark and wet, our reflective waterproof gear keeps you safe and dry.',
-          media1Heading: 'Reflective Protection',
-          media1Text: 'High-visibility details and waterproof construction for safe after-dark training.',
-          media2Heading: 'Night-Ready Layers',
-          media2Text: 'Insulated, waterproof, and reflective. Everything you need to own the rainy night.'
-        }
-      }
+    rainy: {
+      hero: 'https://cdn.shopify.com/s/files/1/0988/6964/1498/files/The_rainy_hero_image.jpg?v=1774908322',
+      media1: 'https://cdn.shopify.com/s/files/1/0988/6964/1498/files/rainy_day_1.png?v=1774908455',
+      media2: 'https://cdn.shopify.com/s/files/1/0988/6964/1498/files/rainy_day_2.jpg?v=1774908558'
     }
   };
 
-  // Store context data globally so holiday check can access it
-  var CONTEXT = {
-    countryCode: null,
-    holiday: null
+  var BUTTONS = {
+    sunny: { text: 'Shop Sunshine Picks', link: '/collections/sunshine-picks' },
+    rainy: { text: 'Shop Rainy Day Essentials', link: '/collections/rainy-day-essentials' }
   };
-
-  function getTimeOfDay() {
-    var hour = new Date().getHours();
-    if (hour >= 5 && hour < 12) return 'morning';
-    if (hour >= 12 && hour < 17) return 'afternoon';
-    return 'evening';
-  }
-
-  function getMood(weatherCode) {
-    if (weatherCode === 800 || weatherCode === 801 || weatherCode === 802) {
-      return 'sunny';
-    }
-    return 'rainy';
-  }
 
   function createHeroButton(text, link) {
     var button = document.createElement('a');
@@ -138,87 +50,57 @@
     }
   }
 
-  function fetchHoliday(countryCode, callback) {
-    var today = new Date();
-    var year = today.getFullYear();
-    var month = String(today.getMonth() + 1).padStart(2, '0');
-    var day = String(today.getDate()).padStart(2, '0');
-    var todayStr = year + '-' + month + '-' + day;
-
-    var url = 'https://date.nager.at/api/v3/PublicHolidays/' + year + '/' + countryCode;
-
-    fetch(url)
-      .then(function (res) { return res.json(); })
-      .then(function (holidays) {
-        var todayHoliday = null;
-        for (var i = 0; i < holidays.length; i++) {
-          if (holidays[i].date === todayStr) {
-            todayHoliday = holidays[i];
-            break;
-          }
-        }
-        if (todayHoliday) {
-          console.log('[Ruuz] Holiday detected: ' + todayHoliday.localName + ' (' + countryCode + ')');
-          CONTEXT.holiday = todayHoliday;
-        } else {
-          console.log('[Ruuz] No holiday today in ' + countryCode);
-        }
-        callback(todayHoliday);
-      })
-      .catch(function () {
-        console.log('[Ruuz] Holiday check failed for ' + countryCode);
-        callback(null);
-      });
-  }
-
-  function applyMood(mood, uvIndex, airQuality) {
-    var timeOfDay = getTimeOfDay();
-    var moodConfig = CONFIG.moods[mood];
-    var timeConfig = moodConfig[timeOfDay];
-    var moodImages = CONFIG.images[mood];
+  function applyContext(data) {
+    var mood = data.mood;
+    var ai = data.ai_copy || {};
+    var images = IMAGES[mood];
+    var btn = BUTTONS[mood];
+    var alerts = data.alerts || [];
 
     document.body.setAttribute('data-ruuz-mood', mood);
-    document.body.setAttribute('data-ruuz-time', timeOfDay);
+    document.body.setAttribute('data-ruuz-time', data.time_of_day);
+    document.body.setAttribute('data-ruuz-daylight', data.daylight);
 
-    // 1. ANNOUNCEMENT BANNER (default mood message, may be overridden by alerts or holidays)
+    // 1. ANNOUNCEMENT BANNER
+    var announcementText = ai.announcement || alerts.join(' | ') || 'Welcome to our store';
+    if (alerts.length > 0) {
+      announcementText = alerts.join(' | ');
+    }
     var announcements = document.querySelectorAll('.announcement-bar__text');
     for (var i = 0; i < announcements.length; i++) {
-      announcements[i].textContent = timeConfig.announcement;
+      announcements[i].textContent = announcementText;
     }
-    console.log('[Ruuz] Announcement updated');
 
     // 2. HERO
     var heroContainer = document.querySelector('.hero__container');
     if (heroContainer) {
       var heroHeading = heroContainer.querySelector('h1');
-      if (heroHeading) heroHeading.textContent = timeConfig.headline;
+      if (heroHeading && ai.headline) heroHeading.textContent = ai.headline;
 
       var heroSubtext = heroContainer.querySelector('rte-formatter p');
-      if (heroSubtext) heroSubtext.textContent = timeConfig.subheadline;
+      if (heroSubtext && ai.subheadline) heroSubtext.textContent = ai.subheadline;
 
       var heroImage = heroContainer.querySelector('img.hero__media');
       if (heroImage) {
-        heroImage.src = moodImages.hero;
+        heroImage.src = images.hero;
         heroImage.srcset = '';
       }
 
       var existingButton = document.getElementById('ruuz-hero-button');
       if (existingButton) {
-        existingButton.textContent = moodConfig.buttonText;
-        existingButton.href = moodConfig.buttonLink;
+        existingButton.textContent = btn.text;
+        existingButton.href = btn.link;
       } else {
         var heroContent = heroContainer.querySelector('.hero__content-wrapper');
         if (heroContent) {
-          heroContent.appendChild(createHeroButton(moodConfig.buttonText, moodConfig.buttonLink));
+          heroContent.appendChild(createHeroButton(btn.text, btn.link));
         }
       }
-      console.log('[Ruuz] Hero updated');
     }
 
     // 3. COLLECTIONS
     var sunnyGrid = document.querySelector('[id*="product_list_themegen"]');
     var rainySection = document.getElementById('ruuz-rainy');
-
     if (mood === 'rainy') {
       if (sunnyGrid) sunnyGrid.style.display = 'none';
       if (rainySection) rainySection.style.display = '';
@@ -226,13 +108,10 @@
       if (sunnyGrid) sunnyGrid.style.display = '';
       if (rainySection) rainySection.style.display = 'none';
     }
-    console.log('[Ruuz] Collections swapped');
 
-    // 4. HIDE "Our shop" AND FIX WHITE SPACE
+    // 4. HIDE "Our shop" AND FIX SPACING
     var ourShopBlock = document.querySelector('[class*="text_pH8qby"]');
-    if (ourShopBlock) {
-      ourShopBlock.style.display = 'none';
-    }
+    if (ourShopBlock) ourShopBlock.style.display = 'none';
 
     var pullQuoteSection = document.querySelector('[id*="section_x8mrnx"]');
     if (pullQuoteSection) {
@@ -243,175 +122,59 @@
         pullQuoteContent.style.setProperty('--padding-block-start', '20px');
       }
     }
-    console.log('[Ruuz] Our shop hidden, spacing fixed');
 
-    // 5. PULL QUOTE TEXT
-    if (pullQuoteSection) {
+    // 5. PULL QUOTE
+    if (pullQuoteSection && ai.pull_quote) {
       var allH2s = pullQuoteSection.querySelectorAll('h2');
       for (var j = 0; j < allH2s.length; j++) {
         if (allH2s[j].textContent.length > 30) {
-          allH2s[j].textContent = timeConfig.pullQuote;
-          console.log('[Ruuz] Pull quote updated');
+          allH2s[j].textContent = ai.pull_quote;
           break;
         }
       }
     }
 
-    // 6. MEDIA WITH TEXT - SECTION 1 (left image)
+    // 6. MEDIA SECTION 1
     var mediaSection1 = document.querySelector('[id*="media_with_content_xMM9EF"]');
     if (mediaSection1) {
-      var heading1 = mediaSection1.querySelector('h2');
-      if (heading1) heading1.textContent = timeConfig.media1Heading;
-
-      var texts1 = mediaSection1.querySelectorAll('rte-formatter p, .rte p');
-      if (texts1.length > 0) texts1[0].textContent = timeConfig.media1Text;
-
-      swapAllImages(mediaSection1, moodImages.media1);
-
+      swapAllImages(mediaSection1, images.media1);
       var btn1 = mediaSection1.querySelector('a.button, a[class*="button"]');
-      if (btn1) {
-        btn1.href = moodConfig.buttonLink;
-      }
-      console.log('[Ruuz] Media section 1 updated');
+      if (btn1) btn1.href = btn.link;
     }
 
-    // 7. MEDIA WITH TEXT - SECTION 2 (right image)
+    // 7. MEDIA SECTION 2
     var mediaSection2 = document.querySelector('[id*="media_with_content_nrnzPh"]');
     if (mediaSection2) {
-      var heading2 = mediaSection2.querySelector('h2');
-      if (heading2) heading2.textContent = timeConfig.media2Heading;
-
-      var texts2 = mediaSection2.querySelectorAll('rte-formatter p, .rte p');
-      if (texts2.length > 0) texts2[0].textContent = timeConfig.media2Text;
-
-      swapAllImages(mediaSection2, moodImages.media2);
-
+      swapAllImages(mediaSection2, images.media2);
       var btn2 = mediaSection2.querySelector('a.button, a[class*="button"]');
-      if (btn2) {
-        btn2.href = moodConfig.buttonLink;
-      }
-      console.log('[Ruuz] Media section 2 updated');
+      if (btn2) btn2.href = btn.link;
     }
 
-    // 8. UV AND AIR QUALITY ALERTS
-    var alertMessages = [];
-
-    if (uvIndex >= 11) {
-      alertMessages.push('Extreme UV (' + Math.round(uvIndex) + ') — avoid outdoor exposure');
-      document.body.setAttribute('data-ruuz-uv', 'extreme');
-    } else if (uvIndex >= 8) {
-      alertMessages.push('Very high UV (' + Math.round(uvIndex) + ') — sun protection essential');
-      document.body.setAttribute('data-ruuz-uv', 'very-high');
-    } else if (uvIndex >= 6) {
-      alertMessages.push('High UV (' + Math.round(uvIndex) + ') — protect your skin');
-      document.body.setAttribute('data-ruuz-uv', 'high');
-    } else if (uvIndex >= 3) {
-      alertMessages.push('Moderate UV (' + Math.round(uvIndex) + ') — sunscreen recommended');
-      document.body.setAttribute('data-ruuz-uv', 'moderate');
-    } else {
-      document.body.setAttribute('data-ruuz-uv', 'low');
-    }
-
-    if (airQuality >= 4) {
-      alertMessages.push('Air quality alert — consider indoor workouts');
-      document.body.setAttribute('data-ruuz-air', 'poor');
-    } else {
-      document.body.setAttribute('data-ruuz-air', 'good');
-    }
-
-    // 9. HOLIDAY OVERRIDE (highest priority for banner)
-    if (CONTEXT.holiday) {
-      var holidayMessage = 'Happy ' + CONTEXT.holiday.localName + ' — celebrate with our latest picks';
-      document.body.setAttribute('data-ruuz-holiday', CONTEXT.holiday.localName);
-
-      if (alertMessages.length > 0) {
-        alertMessages.unshift(holidayMessage);
-      } else {
-        alertMessages.push(holidayMessage);
-      }
-      console.log('[Ruuz] Holiday banner: ' + holidayMessage);
-    }
-
-    if (alertMessages.length > 0) {
-      var alertAnnouncements = document.querySelectorAll('.announcement-bar__text');
-      for (var k = 0; k < alertAnnouncements.length; k++) {
-        alertAnnouncements[k].textContent = alertMessages.join(' | ');
-      }
-      console.log('[Ruuz] Alert banner: ' + alertMessages.join(' | '));
-    }
-
-    // FULL LOG
-    console.log('[Ruuz] ---- Context Applied ----');
-    console.log('[Ruuz] Mood: ' + mood + ' | Time: ' + timeOfDay);
-    console.log('[Ruuz] Headline: ' + timeConfig.headline);
-    console.log('[Ruuz] Announcement: ' + timeConfig.announcement);
-    console.log('[Ruuz] Pull quote: ' + timeConfig.pullQuote);
-    console.log('[Ruuz] Media 1: ' + timeConfig.media1Heading);
-    console.log('[Ruuz] Media 2: ' + timeConfig.media2Heading);
-    console.log('[Ruuz] Collection: ' + (mood === 'rainy' ? 'Rainy Day Essentials' : 'Sunshine Picks'));
-    console.log('[Ruuz] UV Index: ' + (uvIndex || 0));
-    console.log('[Ruuz] Air Quality: ' + (airQuality || 1) + '/5');
-    console.log('[Ruuz] Holiday: ' + (CONTEXT.holiday ? CONTEXT.holiday.localName : 'none'));
-    console.log('[Ruuz] Country: ' + (CONTEXT.countryCode || 'unknown'));
-    console.log('[Ruuz] --------------------------');
+    console.log('[Ruuz] ---- Live Backend Context ----');
+    console.log('[Ruuz] Mood: ' + mood + ' | Time: ' + data.time_of_day);
+    console.log('[Ruuz] Weather: ' + data.weather.description + ' ' + data.weather.temp + 'F');
+    console.log('[Ruuz] AI Headline: ' + (ai.headline || 'fallback'));
+    console.log('[Ruuz] AI Subheadline: ' + (ai.subheadline || 'fallback'));
+    console.log('[Ruuz] AI Announcement: ' + (ai.announcement || 'fallback'));
+    console.log('[Ruuz] AI Pull Quote: ' + (ai.pull_quote || 'fallback'));
+    console.log('[Ruuz] Alerts: ' + alerts.join(' | '));
+    console.log('[Ruuz] News: ' + (data.news.top_headline || 'none'));
+    console.log('[Ruuz] Stock: ' + data.stock_market.sentiment + ' (' + data.stock_market.change_percent + '%)');
+    console.log('[Ruuz] -------------------------------');
   }
 
-  function fetchUV(lat, lon, callback) {
-    var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon + '&current=uv_index';
+  function callBackend(lat, lon, country) {
+    var url = BACKEND_URL + '/context?lat=' + lat + '&lon=' + lon + '&country=' + country;
+    console.log('[Ruuz] Calling backend: ' + url);
 
     fetch(url)
       .then(function (res) { return res.json(); })
       .then(function (data) {
-        var uv = data.current && data.current.uv_index ? data.current.uv_index : 0;
-        console.log('[Ruuz] UV Index: ' + uv);
-        callback(uv);
+        console.log('[Ruuz] Backend response received');
+        applyContext(data);
       })
-      .catch(function () {
-        console.log('[Ruuz] UV fetch failed, defaulting to 0');
-        callback(0);
-      });
-  }
-
-  function fetchAirQuality(lat, lon, callback) {
-    var url = 'https://api.openweathermap.org/data/2.5/air_pollution?lat=' + lat + '&lon=' + lon + '&appid=' + CONFIG.apiKey;
-
-    fetch(url)
-      .then(function (res) { return res.json(); })
-      .then(function (data) {
-        var aqi = data.list && data.list[0] ? data.list[0].main.aqi : 1;
-        var labels = ['', 'Good', 'Fair', 'Moderate', 'Poor', 'Very Poor'];
-        console.log('[Ruuz] Air Quality: ' + labels[aqi] + ' (' + aqi + '/5)');
-        callback(aqi);
-      })
-      .catch(function () {
-        console.log('[Ruuz] Air quality fetch failed, defaulting to Good');
-        callback(1);
-      });
-  }
-
-  function fetchWeather(lat, lon) {
-    var url = 'https://api.openweathermap.org/data/2.5/weather?lat=' + lat + '&lon=' + lon + '&appid=' + CONFIG.apiKey + '&units=imperial';
-
-    fetch(url)
-      .then(function (res) { return res.json(); })
-      .then(function (data) {
-        if (data.weather && data.weather[0]) {
-          var code = data.weather[0].id;
-          var mood = getMood(code);
-          console.log('[Ruuz] Weather: ' + data.weather[0].description + ' | Code: ' + code + ' | Mood: ' + mood + ' | Temp: ' + data.main.temp + 'F');
-
-          fetchUV(lat, lon, function (uv) {
-            fetchAirQuality(lat, lon, function (aqi) {
-              fetchHoliday(CONTEXT.countryCode || CONFIG.defaultCountry, function () {
-                applyMood(mood, uv, aqi);
-              });
-            });
-          });
-        }
-      })
-      .catch(function () {
-        console.log('[Ruuz] API error, defaulting to sunny');
-        applyMood('sunny', 0, 1);
+      .catch(function (err) {
+        console.log('[Ruuz] Backend error: ' + err);
       });
   }
 
@@ -420,37 +183,32 @@
       .then(function (res) { return res.json(); })
       .then(function (data) {
         if (data.latitude && data.longitude) {
-          console.log('[Ruuz] IP location detected: ' + data.city + ', ' + data.region + ', ' + data.country_code);
-          CONTEXT.countryCode = data.country_code;
-          fetchWeather(data.latitude, data.longitude);
+          console.log('[Ruuz] IP location: ' + data.city + ', ' + data.country_code);
+          callBackend(data.latitude, data.longitude, data.country_code || DEFAULT_COUNTRY);
         } else {
-          console.log('[Ruuz] IP location failed, using default (DC)');
-          fetchWeather(CONFIG.defaultLat, CONFIG.defaultLon);
+          callBackend(DEFAULT_LAT, DEFAULT_LON, DEFAULT_COUNTRY);
         }
       })
       .catch(function () {
-        console.log('[Ruuz] IP location error, using default (DC)');
-        fetchWeather(CONFIG.defaultLat, CONFIG.defaultLon);
+        callBackend(DEFAULT_LAT, DEFAULT_LON, DEFAULT_COUNTRY);
       });
   }
 
   function init() {
-    console.log('[Ruuz] Context Engine v0.7 starting...');
+    console.log('[Ruuz] Context Engine v1.0 (Live Backend) starting...');
 
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         function (pos) {
           console.log('[Ruuz] Browser location detected');
-          CONTEXT.countryCode = CONFIG.defaultCountry;
-          fetchWeather(pos.coords.latitude, pos.coords.longitude);
+          callBackend(pos.coords.latitude, pos.coords.longitude, DEFAULT_COUNTRY);
         },
         function () {
-          console.log('[Ruuz] Browser location denied, trying IP location...');
+          console.log('[Ruuz] Browser denied, using IP location...');
           fetchIPLocation();
         }
       );
     } else {
-      console.log('[Ruuz] Geolocation not supported, trying IP location...');
       fetchIPLocation();
     }
   }
