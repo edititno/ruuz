@@ -268,8 +268,8 @@ Line 2: A subheadline (8-15 words)
 Line 3: An announcement banner message (8-15 words)
 Line 4: A pull quote about the brand (15-25 words)
 
-Make the copy feel natural, energetic, and relevant to the current conditions. Reference the weather or conditions naturally without being overly literal. If there is a holiday, weave it into at least one line."""
-
+Make the copy feel natural, energetic, and relevant to the current conditions. Reference the weather or conditions naturally without being overly literal. If there is a holiday, weave it into at least one line. CRITICAL RULES: Never invent prices, discounts, percentages off, sales, promo codes, or specific dollar amounts. Never mention shipping promotions. The merchant controls all pricing and offers. Stick to lifestyle and product benefit messaging only."""
+        
         response = openai_client.chat.completions.create(
             model='gpt-4o-mini',
             messages=[{'role': 'user', 'content': prompt}],
