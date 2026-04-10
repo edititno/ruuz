@@ -135,7 +135,8 @@ ruuz/
 │   ├── ruuz_db.py
 │   └── ruuz_logger.py
 ├── quality/
-│   └── ruuz_quality.py
+│   ├── ruuz_quality.py
+│   └── ruuz_quality_dashboard.py
 ├── sections/
 │   └── ruuz-rainy.liquid
 └── README.md
