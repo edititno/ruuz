@@ -13,6 +13,20 @@ The Ruuz Context API is deployed and live at:
 - Main context endpoint: `/context?lat=38.9072&lon=-77.0369&country=US`
 - Auto-generated API docs: `/docs`
 
+## Ruuz System View
+
+The **Ruuz System View** is a React-based dashboard that visualizes the Ruuz Context API in real time. It renders six live signal cards (weather, UV, air quality, pollen, news, and market) in a 3×2 grid, a hero strip showing the current mood and time of day, and an editorial AI copy preview section that mirrors what the Ruuz engine would render on a storefront. All data is pulled from the Context API in a single request.
+
+Built with **Vite 6**, **React 18**, **Tailwind CSS v4**, and **lucide-react**. The design system uses **Palette 2 (Lapis and Turquoise)**: warm ivory background, midnight navy text, and accents in lapis blue, Persian turquoise, and aged gold. The wordmark pairs lowercase `ruuz` in serif with Persian script روز in aged gold.
+
+### Run locally
+
+    cd system-view
+    npm install
+    npm run dev
+
+The dev server runs at `http://localhost:5173/`.
+
 ## What It Does
 
 When a customer visits a Ruuz-powered store, the engine collects environmental signals and adapts the entire storefront in real time:
@@ -113,13 +127,17 @@ The backend processes all signals into a single JSON response. The engine applie
 - **Shopify** — Storefront and product management
 - **Shopify Liquid** — Server-side templating for the rainy day collection section
 - **JavaScript (Vanilla)** — Client-side context engine handling weather detection, geolocation, time logic, and full DOM manipulation across 7 page sections
+- **React 18** — Component library for the Ruuz System View dashboard
+- **Vite 6** — Build tool and dev server for the System View
+- **Tailwind CSS v4** — Utility-first styling framework for the System View
+- **lucide-react** — Icon library used throughout the System View
 - **Python** — Data collection logger and SQL database loader
 - **FastAPI** — Python backend API serving all context signals from one endpoint
 - **OpenAI API (GPT-4o-mini)** — AI-generated headlines, subheadlines, and copy based on real-time context signals
 - **SQLite** — Relational database for weather and context data
 - **SQL** — Queries for mood distribution, temperature analysis, UV tracking, air quality, and city-level insights
 - **Pandas** — Data analysis and manipulation
-- **Streamlit** — Interactive analytics dashboard with charts, alert tables, and data explorer
+- **Streamlit** — Two local analytics apps: `data/ruuz_streamlit.py` for charts, alert tables, and data explorer; `quality/ruuz_streamlit.py` for data quality scoring across 16 checks
 - **OpenWeatherMap API** — Real-time weather data and sunrise/sunset timing
 - **OpenWeatherMap Air Pollution API** — Air quality index data
 - **Open-Meteo API** — UV index and pollen data (free, no key required)
@@ -132,24 +150,42 @@ The backend processes all signals into a single JSON response. The engine applie
 
 ## File Structure
 
-```
-ruuz/
-├── api/
-│   └── ruuz_api.py
-├── assets/
-│   └── ruuz-context.js
-├── data/
-│   ├── ruuz_dashboard.py
-│   ├── ruuz_data_sample.csv
-│   ├── ruuz_db.py
-│   └── ruuz_logger.py
-├── quality/
-│   ├── ruuz_quality.py
-│   └── ruuz_quality_dashboard.py
-├── sections/
-│   └── ruuz-rainy.liquid
-└── README.md
-```
+    ruuz/
+    ├── api/
+    │   └── ruuz_api.py
+    ├── assets/
+    │   └── ruuz-context.js
+    ├── data/
+    │   ├── ruuz_data_sample.csv
+    │   ├── ruuz_db.py
+    │   ├── ruuz_logger.py
+    │   └── ruuz_streamlit.py
+    ├── quality/
+    │   ├── ruuz_quality.py
+    │   └── ruuz_streamlit.py
+    ├── sections/
+    │   └── ruuz-rainy.liquid
+    ├── system-view/
+    │   ├── public/
+    │   ├── src/
+    │   │   ├── assets/
+    │   │   ├── components/
+    │   │   │   └── SignalCard.jsx
+    │   │   ├── App.css
+    │   │   ├── App.jsx
+    │   │   ├── index.css
+    │   │   └── main.jsx
+    │   ├── .gitignore
+    │   ├── eslint.config.js
+    │   ├── index.html
+    │   ├── package.json
+    │   ├── package-lock.json
+    │   └── vite.config.js
+    ├── .gitignore
+    ├── Procfile
+    ├── README.md
+    └── requirements.txt
+
 ## Product Vision
 
 Ruuz is designed as a proof of concept for a broader contextual commerce platform.
