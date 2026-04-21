@@ -133,6 +133,7 @@ The backend processes all signals into a single JSON response. The engine applie
 - **lucide-react** — Icon library used throughout the System View
 - **Python** — Data collection logger and SQL database loader
 - **FastAPI** — Python backend API serving all context signals from one endpoint
+- **Railway** — Cloud platform hosting the FastAPI backend with auto-deploy from the GitHub main branch
 - **OpenAI API (GPT-4o-mini)** — AI-generated headlines, subheadlines, and copy based on real-time context signals
 - **SQLite** — Relational database for weather and context data
 - **SQL** — Queries for mood distribution, temperature analysis, UV tracking, air quality, and city-level insights
