@@ -6,12 +6,15 @@ Ruuz is a contextual commerce platform that dynamically adapts Shopify storefron
 
 ## Live Demo
 
-The Ruuz Context API is deployed and live at:
-**https://web-production-2b083.up.railway.app**
+**Ruuz System View (live dashboard):**  
+[https://ruuz.vercel.app](https://ruuz.vercel.app)
 
-- API root: `/`
-- Main context endpoint: `/context?lat=38.9072&lon=-77.0369&country=US`
-- Auto-generated API docs: `/docs`
+**Ruuz Context API (backend):**  
+**<https://web-production-2b083.up.railway.app>**
+
+* API root: `/`
+* Main context endpoint: `/context?lat=38.9072&lon=-77.0369&country=US`
+* Auto-generated API docs: `/docs`
 
 ## Ruuz System View
 
@@ -19,11 +22,15 @@ The **Ruuz System View** is a React-based dashboard that visualizes the Ruuz Con
 
 Built with **Vite 6**, **React 18**, **Tailwind CSS v4**, and **lucide-react**. The design system uses **Palette 2 (Lapis and Turquoise)**: warm ivory background, midnight navy text, and accents in lapis blue, Persian turquoise, and aged gold. The wordmark pairs lowercase `ruuz` in serif with Persian script روز in aged gold.
 
+**Live at:** [https://ruuz.vercel.app](https://ruuz.vercel.app)
+
 ### Run locally
 
-    cd system-view
-    npm install
-    npm run dev
+```
+cd system-view
+npm install
+npm run dev
+```
 
 The dev server runs at `http://localhost:5173/`.
 
@@ -134,6 +141,7 @@ The backend processes all signals into a single JSON response. The engine applie
 - **Python** — Data collection logger and SQL database loader
 - **FastAPI** — Python backend API serving all context signals from one endpoint
 - **Railway** — Cloud platform hosting the FastAPI backend with auto-deploy from the GitHub main branch
+- **Vercel** — Cloud platform hosting the Ruuz System View dashboard, with auto-deploy from the GitHub main branch
 - **OpenAI API (GPT-4o-mini)** — AI-generated headlines, subheadlines, and copy based on real-time context signals
 - **SQLite** — Relational database for weather and context data
 - **SQL** — Queries for mood distribution, temperature analysis, UV tracking, air quality, and city-level insights
