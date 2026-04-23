@@ -1,6 +1,8 @@
-# Ruuz — Contextual Commerce Engine
+# Ruuz — Context Intelligence Platform
 
-Ruuz is a contextual commerce platform that dynamically adapts Shopify storefronts based on real-time environmental signals. Instead of showing every visitor the same static page, Ruuz reads weather, UV index, air quality, pollen levels, public holidays, national news, stock market sentiment, sunrise/sunset timing, and local time to serve the most relevant products, messaging, imagery, and calls-to-action — all using the merchant's own assets, images, and collections.
+Ruuz is a context intelligence platform that powers real-time, AI-driven experiences from live environmental, economic, and cultural signals. The flagship use case is **contextual commerce**: storefronts that adapt in real time to weather, UV, air quality, pollen, public holidays, news, market sentiment, sunrise/sunset, and local time — serving the most relevant products, messaging, imagery, and calls-to-action using the merchant's own assets.
+
+**Shopify is the first vertical.** The same signal engine and LLM orchestration layer can power adjacent markets including ad bidding, dynamic pricing, travel, and logistics.
 
 **Core thesis:** Ruuz doesn't decide WHO the customer is. It decides WHAT MOMENT the customer is in. The persona stays the same. The context changes.
 
@@ -197,24 +199,26 @@ The backend processes all signals into a single JSON response. The engine applie
 
 ## Product Vision
 
-Ruuz is designed as a proof of concept for a broader contextual commerce platform.
+Ruuz is a context intelligence platform. The first deployed application is **contextual commerce for Shopify**, with signal expansion and platform hardening underway to support adjacent verticals (ad bidding, dynamic pricing, travel, logistics).
 
-**Signal expansion (completed):** Weather, UV index, air quality, pollen, IP geolocation, public holidays, sunrise/sunset timing, national news, and stock market sentiment. Future additions include local news by city, sports scores, and social media trending topics.
+**Signal expansion (completed):** Weather, UV index, air quality, pollen, IP geolocation, public holidays, sunrise/sunset timing, national news, and stock market sentiment.
+
+**Signal expansion (in progress):** Economic context (FRED API, VIX, BLS regional indicators), local events (Eventbrite, Ticketmaster), expanded trend data (Google Trends, Reddit), and hyper-local news.
 
 **Merchant experience:** Zero-config mode that works with existing collections and assets immediately. Smart auto-tagging using ML-powered product classification that scans titles, descriptions, and tags to suggest context mappings. **Data quality scoring (completed)** — a free Python tool that analyzes Shopify product exports and generates a weighted readiness score across 16 checks spanning critical fields (images, descriptions, pricing), high-importance fields (SKUs, inventory, SEO, tags), medium-importance fields (shipping weight, compare-at price), and minor fields (barcodes, categorization, duplicates). Merchants get an actionable report with specific items to fix, prioritized by impact. Merchant dashboard for mapping triggers to collections without touching code.
 
 **LLM-powered content (completed):** Dynamic headline and copy generation using the OpenAI API (GPT-4o-mini). The backend sends all context signals to the LLM, which generates a unique headline, subheadline, announcement, and pull quote for every visit. No two customers see the same copy.
 
-**AI brand voice training (future):** The next evolution of AI-generated content trains the LLM on each merchant's actual brand voice by analyzing their existing product descriptions, About page, marketing emails, and social media copy. Generated headlines and messaging will sound like the merchant wrote them, not generic. This also extends to auto-generating product descriptions, collection copy, and email subject lines based on real-time context, reducing the merchant's content workload while keeping their voice consistent across every customer touchpoint.
+**AI brand voice via RAG (future):** The next evolution trains contextual awareness of each merchant's brand voice using Retrieval-Augmented Generation with a vector database (pgvector). Merchant product descriptions, About page, marketing emails, and social media copy are indexed and retrieved at generation time, so the LLM produces on-brand copy without expensive model fine-tuning. This extends to auto-generating product descriptions, collection copy, and email subject lines based on real-time context.
 
 **Tiered model:** Free tier with 2 mood mappings, basic weather and time signals, and the data quality scoring tool. Pro tier with unlimited moods, all signals, analytics dashboard, auto-tagging, and LLM-generated content. Enterprise tier with multi-store support, custom API integrations, and A/B testing to validate contextual commerce performance against static storefronts.
 
 **A/B testing:** Contextual commerce and A/B testing work together. A/B testing validates whether contextual adaptation actually improves conversion rates by showing 50% of visitors the Ruuz-adapted storefront and 50% the default static page, then comparing results. This is how merchants prove ROI.
 
-**Ethics and data practices:** Environmental data (weather, UV, air quality per city) is stored for analytics and model training — this is not personal data. Visitor session data is stored in anonymized form (city, mood served, collection shown, click-through) for merchant analytics dashboards. No personally identifiable information is collected or stored. Algorithmic transparency with optional "personalized for your local weather" badge. Product diversity safeguards to prevent geographic filter bubbles. GDPR-compliant data handling. Privacy disclosure generator for merchants.
+**Ethics and data practices:** Environmental, economic, and cultural data (weather, UV, air quality, market indicators per region) is stored for analytics and model training — this is not personal data. Visitor session data is stored in anonymized form (city, mood served, collection shown, click-through) for merchant analytics dashboards. No personally identifiable information is collected or stored. Algorithmic transparency with optional "personalized for your local context" badge. Product diversity safeguards to prevent geographic filter bubbles. GDPR-compliant data handling. Privacy disclosure generator for merchants.
 
 ## About
 
-Ruuz was built as a project while completing a Master's in Data Analytics (ML focus). The project demonstrates product thinking, real-time API integration, contextual personalization, full-stack development, data pipeline engineering, AI-powered content generation, and ethical considerations applied to e-commerce.
+Ruuz was built as a project while completing a Master's in Data Science (ML focus). The project demonstrates product thinking, real-time API integration, contextual personalization, full-stack development, data pipeline engineering, AI-powered content generation, and ethical considerations applied to e-commerce.
 
 The name "Ruuz" is inspired by the Farsi word روز (rooz), meaning "day" — reflecting the engine's core function of adapting the shopping experience to the conditions of the day.
