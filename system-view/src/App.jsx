@@ -7,7 +7,7 @@ function App() {
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    fetch('https://web-production-2b083.up.railway.app/context?lat=38.9072&lon=-77.0369')
+    fetch('/api/context?lat=38.9072&lon=-77.0369')
       .then((response) => {
         if (!response.ok) throw new Error(`Backend returned ${response.status}`)
         return response.json()
