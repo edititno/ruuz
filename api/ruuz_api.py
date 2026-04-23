@@ -3,13 +3,16 @@
 # Signals: weather, UV, air quality, pollen, holidays, news, stock market, sunrise/sunset
 # AI: OpenAI generates unique headlines based on all signals
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 import requests
 from datetime import datetime
 from openai import OpenAI
 from fastapi import Depends, HTTPException, Security
 from fastapi.security import APIKeyHeader
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 app = FastAPI(title='Ruuz Context API', version='4.0')
 
@@ -19,6 +22,11 @@ app.add_middleware(
     allow_methods=['*'],
     allow_headers=['*'],
 )
+
+# Rate limiting
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # API Keys — loaded from environment variables (Railway or local)
 import os
@@ -340,7 +348,8 @@ def home():
 
 
 @app.get('/context')
-def get_context(lat: float, lon: float, country: str = 'US', ai: bool = True, api_key: str = Depends(verify_api_key)):
+@limiter.limit("30/minute")
+def get_context(request: Request, lat: float, lon: float, country: str = 'US', ai: bool = True, api_key: str = Depends(verify_api_key)):
     """
     Main endpoint. Returns all context signals + AI-generated copy.
     Set ai=false to skip AI generation and save API costs.
@@ -438,7 +447,8 @@ def get_context(lat: float, lon: float, country: str = 'US', ai: bool = True, ap
 
 
 @app.get('/news')
-def get_news(country: str = 'US', api_key: str = Depends(verify_api_key)):
+@limiter.limit("30/minute")
+def get_news(request: Request, country: str = 'US', api_key: str = Depends(verify_api_key)):
     """Returns top news headlines for a country."""
     news = fetch_news(country)
     return {
@@ -450,7 +460,8 @@ def get_news(country: str = 'US', api_key: str = Depends(verify_api_key)):
 
 
 @app.get('/stock')
-def get_stock(api_key: str = Depends(verify_api_key)):
+@limiter.limit("30/minute")
+def get_stock(request: Request, api_key: str = Depends(verify_api_key)):
     """Returns current S&P 500 (SPY) market data and sentiment."""
     stock = fetch_stock_market()
     return {
