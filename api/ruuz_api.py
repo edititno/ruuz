@@ -18,9 +18,13 @@ app = FastAPI(title='Ruuz Context API', version='4.0')
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=['*'],
-    allow_methods=['*'],
-    allow_headers=['*'],
+    allow_origins=[
+        'https://ruuz.vercel.app',
+        'https://ruuz-dev.myshopify.com',
+        'http://localhost:5173',
+    ],
+    allow_methods=['GET'],
+    allow_headers=['X-API-Key', 'Content-Type'],
 )
 
 # Rate limiting
