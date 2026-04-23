@@ -8,6 +8,8 @@ from fastapi.middleware.cors import CORSMiddleware
 import requests
 from datetime import datetime
 from openai import OpenAI
+from fastapi import Depends, HTTPException, Security
+from fastapi.security import APIKeyHeader
 
 app = FastAPI(title='Ruuz Context API', version='4.0')
 
@@ -26,6 +28,17 @@ ALPHAVANTAGE_KEY = os.environ.get('ALPHAVANTAGE_KEY', '')
 OPENAI_KEY = os.environ.get('OPENAI_KEY', '')
 
 openai_client = OpenAI(api_key=OPENAI_KEY)
+
+# API authentication
+RUUZ_API_KEY = os.environ.get('RUUZ_API_KEY', '')
+api_key_header = APIKeyHeader(name='X-API-Key', auto_error=False)
+
+def verify_api_key(api_key: str = Security(api_key_header)):
+    if not RUUZ_API_KEY:
+        raise HTTPException(status_code=500, detail='API key not configured on server')
+    if api_key != RUUZ_API_KEY:
+        raise HTTPException(status_code=401, detail='Invalid or missing API key')
+    return api_key
 
 # Caches
 holiday_cache = {}
@@ -327,7 +340,7 @@ def home():
 
 
 @app.get('/context')
-def get_context(lat: float, lon: float, country: str = 'US', ai: bool = True):
+def get_context(lat: float, lon: float, country: str = 'US', ai: bool = True, api_key: str = Depends(verify_api_key)):
     """
     Main endpoint. Returns all context signals + AI-generated copy.
     Set ai=false to skip AI generation and save API costs.
@@ -425,7 +438,7 @@ def get_context(lat: float, lon: float, country: str = 'US', ai: bool = True):
 
 
 @app.get('/news')
-def get_news(country: str = 'US'):
+def get_news(country: str = 'US', api_key: str = Depends(verify_api_key)):
     """Returns top news headlines for a country."""
     news = fetch_news(country)
     return {
@@ -437,7 +450,7 @@ def get_news(country: str = 'US'):
 
 
 @app.get('/stock')
-def get_stock():
+def get_stock(api_key: str = Depends(verify_api_key)):
     """Returns current S&P 500 (SPY) market data and sentiment."""
     stock = fetch_stock_market()
     return {
