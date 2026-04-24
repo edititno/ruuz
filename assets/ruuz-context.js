@@ -1,13 +1,14 @@
 /*
- * Ruuz Context Engine v1.0 (Live Backend Integration)
- * Calls deployed FastAPI backend at Railway for all signals + AI-generated copy
- * Backend: https://web-production-2b083.up.railway.app
+ * Ruuz Context Engine v1.1 (Vercel Proxy Integration)
+ * Calls Vercel serverless proxy which forwards to FastAPI backend on Railway
+ * Proxy: https://ruuz.vercel.app/api/context
+ * Keeps API key server-side only
  */
 
 (function () {
   'use strict';
 
-  var BACKEND_URL = 'https://web-production-2b083.up.railway.app';
+  var BACKEND_URL = 'https://ruuz.vercel.app';
   var DEFAULT_LAT = 38.9072;
   var DEFAULT_LON = -77.0369;
   var DEFAULT_COUNTRY = 'US';
@@ -197,7 +198,7 @@
   }
   
   function callBackend(lat, lon, country) {
-    var url = BACKEND_URL + '/context?lat=' + lat + '&lon=' + lon + '&country=' + country;
+    var url = BACKEND_URL + '/api/context?lat=' + lat + '&lon=' + lon + '&country=' + country;
     console.log('[Ruuz] Calling backend: ' + url);
 
     fetch(url)
