@@ -6,7 +6,7 @@ Ruuz is a context intelligence platform that powers real-time, AI-driven experie
 
 **Core thesis:** Ruuz doesn't decide WHO the customer is. It decides WHAT MOMENT the customer is in. The persona stays the same. The context changes.
 
-## Live Demo
+## Live Demo (temporarily offline, runs locally)
 
 **Ruuz System View (live dashboard):**  
 [https://ruuz.vercel.app](https://ruuz.vercel.app)
