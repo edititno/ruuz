@@ -219,6 +219,6 @@ Ruuz is a context intelligence platform. The first deployed application is **con
 
 ## About
 
-Ruuz was built as a project while completing a Master's in Data Science (ML focus). The project demonstrates product thinking, real-time API integration, contextual personalization, full-stack development, data pipeline engineering, AI-powered content generation, and ethical considerations applied to e-commerce.
+Ruuz was built as a project while completing a Master's in Applied AI. The project demonstrates product thinking, real-time API integration, contextual personalization, full-stack development, data pipeline engineering, AI-powered content generation, and ethical considerations applied to e-commerce.
 
 The name "Ruuz" is inspired by the Farsi word روز (rooz), meaning "day" — reflecting the engine's core function of adapting the shopping experience to the conditions of the day.
