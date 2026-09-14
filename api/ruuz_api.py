@@ -415,7 +415,9 @@ def get_context(request: Request, lat: float, lon: float, country: str = 'US', a
             'humidity': weather['humidity'],
             'wind_speed': weather['wind_speed'],
             'sunrise': weather['sunrise'],
-            'sunset': weather['sunset']
+            'sunset': weather['sunset'],
+            'sunrise_ts': weather['sunrise_ts'],
+            'sunset_ts': weather['sunset_ts']
         }
 
     # Build context for AI
