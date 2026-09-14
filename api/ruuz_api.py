@@ -303,8 +303,7 @@ Make the copy feel natural, energetic, and relevant to the current conditions. R
         response = claude_client.messages.create(
             model='claude-haiku-4-5',
             messages=[{'role': 'user', 'content': prompt}],
-            max_tokens=400,
-            temperature=0.8
+            max_tokens=400
         )
 
         lines = response.content[0].text.strip().split('\n')
