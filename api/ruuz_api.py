@@ -1,13 +1,13 @@
 # Ruuz Context API v4.0
 # FastAPI backend — all context signals + AI-generated headlines
 # Signals: weather, UV, air quality, pollen, holidays, news, stock market, sunrise/sunset
-# AI: OpenAI generates unique headlines based on all signals
+# AI: Claude generates unique headlines based on all signals
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 import requests
 from datetime import datetime
-from openai import OpenAI
+import anthropic
 from fastapi import Depends, HTTPException, Security
 from fastapi.security import APIKeyHeader
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -37,9 +37,9 @@ import os
 OPENWEATHER_KEY = os.environ.get('OPENWEATHER_KEY', '')
 GNEWS_KEY = os.environ.get('GNEWS_KEY', '')
 ALPHAVANTAGE_KEY = os.environ.get('ALPHAVANTAGE_KEY', '')
-OPENAI_KEY = os.environ.get('OPENAI_KEY', '')
+ANTHROPIC_KEY = os.environ.get('ANTHROPIC_KEY', '')
 
-openai_client = OpenAI(api_key=OPENAI_KEY)
+claude_client = anthropic.Anthropic(api_key=ANTHROPIC_KEY)
 
 # API authentication
 RUUZ_API_KEY = os.environ.get('RUUZ_API_KEY', '')
@@ -300,14 +300,14 @@ Line 9: A short ribbon banner message (4-8 words)
 
 Make the copy feel natural, energetic, and relevant to the current conditions. Reference the weather or conditions naturally without being overly literal. If there is a holiday, weave it into at least one line. CRITICAL RULES: Never invent prices, discounts, percentages off, sales, promo codes, or specific dollar amounts. Never mention shipping promotions. The merchant controls all pricing and offers. Stick to lifestyle and product benefit messaging only."""
         
-        response = openai_client.chat.completions.create(
-            model='gpt-4o-mini',
+        response = claude_client.messages.create(
+            model='claude-haiku-4-5',
             messages=[{'role': 'user', 'content': prompt}],
             max_tokens=400,
             temperature=0.8
         )
 
-        lines = response.choices[0].message.content.strip().split('\n')
+        lines = response.content[0].text.strip().split('\n')
         lines = [line.strip() for line in lines if line.strip()]
 
         if len(lines) >= 9:
@@ -346,7 +346,7 @@ def home():
         'name': 'Ruuz Context API',
         'version': '4.0',
         'signals': ['weather', 'uv_index', 'air_quality', 'pollen', 'holidays', 'news', 'stock_market', 'sunrise_sunset', 'time_of_day'],
-        'ai': 'OpenAI GPT-4o-mini for dynamic headline generation',
+        'ai': 'Claude (claude-haiku-4-5) for dynamic headline generation',
         'status': 'running'
     }
 

@@ -63,7 +63,7 @@ Ruuz collects multiple environmental signals and combines them to determine what
 6. **Public holidays** (Nager.Date) — holiday detection for 100+ countries
 7. **News** (GNews) — top national headlines
 8. **Stock market** (Alpha Vantage) — S&P 500 price, change, and consumer sentiment
-9. **AI copy generation** (OpenAI GPT-4o-mini) — unique headlines, subheadlines, announcements, and pull quotes generated per visit
+9. **AI copy generation** (Claude, claude-haiku-4-5) — unique headlines, subheadlines, announcements, and pull quotes generated per visit
 
 **Client-side signals:**
 
@@ -144,7 +144,7 @@ The backend processes all signals into a single JSON response. The engine applie
 - **FastAPI** — Python backend API serving all context signals from one endpoint
 - **Railway** — Cloud platform hosting the FastAPI backend with auto-deploy from the GitHub main branch
 - **Vercel** — Cloud platform hosting the Ruuz System View dashboard, with auto-deploy from the GitHub main branch
-- **OpenAI API (GPT-4o-mini)** — AI-generated headlines, subheadlines, and copy based on real-time context signals
+- **Claude API (claude-haiku-4-5)** — AI-generated headlines, subheadlines, and copy based on real-time context signals
 - **SQLite** — Relational database for weather and context data
 - **SQL** — Queries for mood distribution, temperature analysis, UV tracking, air quality, and city-level insights
 - **Pandas** — Data analysis and manipulation
@@ -207,7 +207,7 @@ Ruuz is a context intelligence platform. The first deployed application is **con
 
 **Merchant experience:** Zero-config mode that works with existing collections and assets immediately. Smart auto-tagging using ML-powered product classification that scans titles, descriptions, and tags to suggest context mappings. **Data quality scoring (completed)** — a free Python tool that analyzes Shopify product exports and generates a weighted readiness score across 16 checks spanning critical fields (images, descriptions, pricing), high-importance fields (SKUs, inventory, SEO, tags), medium-importance fields (shipping weight, compare-at price), and minor fields (barcodes, categorization, duplicates). Merchants get an actionable report with specific items to fix, prioritized by impact. Merchant dashboard for mapping triggers to collections without touching code.
 
-**LLM-powered content (completed):** Dynamic headline and copy generation using the OpenAI API (GPT-4o-mini). The backend sends all context signals to the LLM, which generates a unique headline, subheadline, announcement, and pull quote for every visit. No two customers see the same copy.
+**LLM-powered content (completed):** Dynamic headline and copy generation using the Claude API (claude-haiku-4-5). The backend sends all context signals to the LLM, which generates a unique headline, subheadline, announcement, and pull quote for every visit. No two customers see the same copy.
 
 **AI brand voice via RAG (future):** The next evolution trains contextual awareness of each merchant's brand voice using Retrieval-Augmented Generation with a vector database (pgvector). Merchant product descriptions, About page, marketing emails, and social media copy are indexed and retrieved at generation time, so the LLM produces on-brand copy without expensive model fine-tuning. This extends to auto-generating product descriptions, collection copy, and email subject lines based on real-time context.
 
