@@ -6,7 +6,7 @@ Ruuz is a context intelligence platform that powers real-time, AI-driven experie
 
 **Core thesis:** Ruuz doesn't decide WHO the customer is. It decides WHAT MOMENT the customer is in. The persona stays the same. The context changes.
 
-## Live Demo (temporarily offline, runs locally)
+## Live Demo 
 
 **Ruuz System View (live dashboard):**  
 [https://ruuz.vercel.app](https://ruuz.vercel.app)
@@ -35,6 +35,34 @@ npm run dev
 ```
 
 The dev server runs at `http://localhost:5173/`.
+
+## Agentic Mode
+
+Ruuz has two ways of producing copy, and they answer different questions.
+
+**Pipeline mode (`/context`)** is deterministic: the backend fetches every signal, assembles them into one prompt, and Claude writes. The developer decides what the model sees.
+
+**Agentic mode (`/agent`)** inverts that. Claude is handed a toolbox of six signal functions (weather, UV, air quality, pollen, holiday, market) described in the Anthropic tool-use format, plus the shopper's location and what the merchant sells. The model decides which signals this moment needs, the backend executes only those calls, results are returned to the model, and it loops until it judges it has enough to write. The model decides what it needs.
+
+Two calls made minutes apart from the same coordinates on an overcast Washington evening:
+
+| Merchant | Tools the model chose | Rounds | Output |
+|---|---|---|---|
+| sunscreen and outdoor gear | get_weather, get_uv, get_pollen | 3 | "Overcast won't stop rays. Grab SPF before heading out." |
+| luxury watches | get_market | 1 | "Timeless precision, regardless of market moments." |
+
+No rule maps merchants to signals. The selection is the model's judgment, and every response returns the trace (`tools_used`, `rounds`) so that judgment is observable per request.
+
+**Guardrails:** a hard cap of five tool rounds per request, an allowlist so the model can only invoke the six declared tools, per-request tracing for observability, a tighter rate limit than the pipeline endpoint (agent calls spend real tokens), and the same API-key gate as every other endpoint. Signal failures are returned to the model as errors rather than crashing the request.
+
+```
+GET /agent?lat=38.9&lon=-77.0&country=US&merchant=luxury%20watches
+X-API-Key: <key>
+```
+
+```json
+{ "source": "agent", "model": "claude-haiku-4-5", "copy": "...", "tools_used": ["get_market"], "rounds": 1 }
+```
 
 ## What It Does
 

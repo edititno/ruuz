@@ -365,7 +365,7 @@ def run_agent(lat, lon, country, merchant=None):
         "platform. You have tools that report the shopper's live conditions. "
         "Call ONLY the tools this moment actually needs, then write. Do not "
         "call a tool whose signal wouldn't change the copy. Keep the final "
-        "line under 20 words, concrete, no emojis."
+        "line under 20 words, concrete, no emojis, plain text only: no markdown, no dashes."
     )
     situation = f"Shopper location: lat {lat}, lon {lon}, country {country}."
     if merchant:
