@@ -40,6 +40,7 @@ function App() {
 
   const [coords, setCoords] = useState(null)      // precise location, if granted
   const [locating, setLocating] = useState(false)
+  const [locNote, setLocNote] = useState('')     // what to say when location fails
 
   const [moment, setMoment] = useState(null)      // the agent's line about now
   const [merchant, setMerchant] = useState('')     // what the visitor types
@@ -74,7 +75,7 @@ function App() {
         load(c)
         setLocating(false)
       },
-      () => setLocating(false),
+      () => { setLocating(false); setLocNote('location unavailable on this device') },
       { timeout: 8000 }
     )
   }
@@ -140,6 +141,7 @@ function App() {
               {locating ? 'locating...' : 'use my precise location'}
             </button>
           )}
+          {locNote && <span className="text-xs text-[#1e2a44]/50">{locNote}</span>}
         </div>
         <h2 className="text-4xl md:text-5xl font-light mb-2">
           {data.weather?.temp}°F, {data.weather?.description}
