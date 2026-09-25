@@ -595,6 +595,7 @@ def get_context(request: Request, lat: float, lon: float, country: str = 'US', a
     weather_clean = None
     if weather:
         weather_clean = {
+            'city': weather.get('city'),
             'description': weather['description'],
             'code': weather['code'],
             'temp': weather['temp'],
