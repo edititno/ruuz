@@ -4,6 +4,13 @@ import SignalCard from './components/SignalCard'
 // the visitor's local hour, sent along so the agent knows morning from evening
 const localHour = () => new Date().getHours()
 
+// query string builder: precise coordinates when the visitor granted them
+function qs(coords, extra = {}) {
+  const p = new URLSearchParams({ hour: localHour(), ...extra })
+  if (coords) { p.set('lat', coords.lat); p.set('lon', coords.lon) }
+  return p.toString()
+}
+
 // the agent's chosen tools, rendered as a chain of chips
 function Trace({ tools, rounds }) {
   if (!tools || tools.length === 0) {
@@ -31,31 +38,53 @@ function App() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
+  const [coords, setCoords] = useState(null)      // precise location, if granted
+  const [locating, setLocating] = useState(false)
+
   const [moment, setMoment] = useState(null)      // the agent's line about now
   const [merchant, setMerchant] = useState('')     // what the visitor types
   const [asked, setAsked] = useState(null)         // the agent's answer for it
   const [asking, setAsking] = useState(false)
 
-  useEffect(() => {
-    // the six signals, for wherever the visitor is
-    fetch('/api/context')
+  // load the signals and the agent's reading, for approximate or precise coordinates
+  const load = (c) => {
+    fetch(`/api/context?${qs(c)}`)
       .then((r) => { if (!r.ok) throw new Error(`Backend returned ${r.status}`); return r.json() })
       .then((json) => { setData(json); setLoading(false) })
       .catch((err) => { setError(err.message); setLoading(false) })
 
-    // the agent reads the moment, in parallel
-    fetch(`/api/agent?hour=${localHour()}`)
+    setMoment(null)
+    fetch(`/api/agent?${qs(c)}`)
       .then((r) => (r.ok ? r.json() : null))
       .then((json) => setMoment(json || { copy: null }))
       .catch(() => setMoment({ copy: null }))
-  }, [])
+  }
+
+  useEffect(() => { load(null) }, [])
+
+  // ask the browser for real coordinates; the visitor decides
+  const locate = () => {
+    if (!navigator.geolocation || locating) return
+    setLocating(true)
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const c = { lat: pos.coords.latitude.toFixed(3), lon: pos.coords.longitude.toFixed(3) }
+        setCoords(c)
+        setAsked(null)
+        load(c)
+        setLocating(false)
+      },
+      () => setLocating(false),
+      { timeout: 8000 }
+    )
+  }
 
   const ask = () => {
     const m = merchant.trim()
     if (!m || asking) return
     setAsking(true)
     setAsked(null)
-    fetch(`/api/agent?merchant=${encodeURIComponent(m)}&hour=${localHour()}`)
+    fetch(`/api/agent?${qs(coords, { merchant: m })}`)
       .then((r) => (r.ok ? r.json() : null))
       .then((json) => { setAsked(json || { copy: null }); setAsking(false) })
       .catch(() => { setAsked({ copy: null }); setAsking(false) })
@@ -80,7 +109,8 @@ function App() {
     )
   }
 
-  const place = data.city || 'Your location'
+  // precise mode names the place from the weather service; approximate mode from the edge guess
+  const place = coords ? (data.weather?.city || 'Your location') : (data.city || 'Your location')
 
   return (
     <div className="min-h-screen bg-[#f8f5ed] text-[#1e2a44] font-serif">
@@ -97,7 +127,20 @@ function App() {
 
       {/* Hero strip: the visitor's own sky */}
       <section className="px-8 py-10 border-b border-[#1e2a44]/10">
-        <p className="text-xs uppercase tracking-[0.25em] text-[#2a5a8a] mb-3">{place}</p>
+        <div className="flex flex-wrap items-center gap-4 mb-3">
+          <p className="text-xs uppercase tracking-[0.25em] text-[#2a5a8a]">
+            {place} · {coords ? 'precise' : 'approximate, from your network'}
+          </p>
+          {!coords && (
+            <button
+              onClick={locate}
+              className="text-xs uppercase tracking-[0.2em] text-[#c29a3e] underline underline-offset-4 disabled:opacity-40"
+              disabled={locating}
+            >
+              {locating ? 'locating...' : 'use my precise location'}
+            </button>
+          )}
+        </div>
         <h2 className="text-4xl md:text-5xl font-light mb-2">
           {data.weather?.temp}°F, {data.weather?.description}
         </h2>

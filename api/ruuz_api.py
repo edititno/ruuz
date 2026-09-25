@@ -133,6 +133,7 @@ def fetch_weather(lat, lon):
         data = requests.get(url).json()
         if 'weather' in data:
             return {
+                'city': data.get('name'),
                 'description': data['weather'][0]['description'],
                 'code': data['weather'][0]['id'],
                 'temp': round(data['main']['temp']),
