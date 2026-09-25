@@ -42,7 +42,9 @@ When a customer visits a Ruuz-powered store, the engine collects environmental s
 
 All transitions happen instantly on page load.
 
-## Two Ways to Write Copy
+## Agentic Mode
+
+Ruuz runs an agent in production: Claude decides which live signals a moment needs, calls them as tools, and writes from what it gathered. The endpoint is `/agent`, the loop is hand-built on the Anthropic tool-use API, and every response returns the trace of what the agent chose. You can watch it work at [ruuz.mystillmornings.com](https://ruuz.mystillmornings.com).
 
 Ruuz produces AI copy in two modes, and they answer different questions.
 
