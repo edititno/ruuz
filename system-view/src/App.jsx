@@ -228,6 +228,8 @@ function App() {
           <p className="text-[#1e2a44]/70 mb-8 max-w-2xl">
             Tell it what a store sells. It decides which of the signals above matter for
             this moment, fetches only those, and writes one line. The chips show its choices.
+            In production this line is delivered by API straight into the storefront's
+            announcement bar, rewritten for every visitor. Nobody pastes anything.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 mb-10">
             <input
