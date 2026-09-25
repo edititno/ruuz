@@ -13,6 +13,7 @@ from fastapi.security import APIKeyHeader
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
+import json
 
 app = FastAPI(title='Ruuz Context API', version='4.0')
 
@@ -271,6 +272,153 @@ def fetch_stock_market():
         pass
     return {'symbol': 'SPY', 'price': 0, 'change': 0, 'change_percent': 0, 'sentiment': 'neutral'}
 
+# ---- Agentic mode: the toolbox ----
+# Each entry describes one capability to Claude in the Anthropic tool-use
+# format: a name, a plain-English description (this is what Claude reads to
+# decide), and a JSON schema of the arguments it must supply.
+AGENT_TOOLS = [
+    {
+        "name": "get_weather",
+        "description": "Current weather for the shopper's location: temperature, conditions, sunrise and sunset times. Useful for almost any storefront moment.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "lat": {"type": "number", "description": "latitude"},
+                "lon": {"type": "number", "description": "longitude"},
+            },
+            "required": ["lat", "lon"],
+        },
+    },
+    {
+        "name": "get_uv",
+        "description": "UV index at the location. Worth fetching for daytime, outdoor, skincare, or sun-related products.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "lat": {"type": "number"},
+                "lon": {"type": "number"},
+            },
+            "required": ["lat", "lon"],
+        },
+    },
+    {
+        "name": "get_air_quality",
+        "description": "Air quality index at the location. Relevant for outdoor activity, fitness, and health-adjacent products.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "lat": {"type": "number"},
+                "lon": {"type": "number"},
+            },
+            "required": ["lat", "lon"],
+        },
+    },
+    {
+        "name": "get_pollen",
+        "description": "Pollen level at the location. Relevant for allergies, outdoor time, and seasonal products.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "lat": {"type": "number"},
+                "lon": {"type": "number"},
+            },
+            "required": ["lat", "lon"],
+        },
+    },
+    {
+        "name": "get_holiday",
+        "description": "Whether today is a public holiday in the shopper's country. Worth checking for gifting, celebration, or closure-related messaging.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "country": {"type": "string", "description": "two-letter country code, e.g. US"},
+            },
+            "required": ["country"],
+        },
+    },
+    {
+        "name": "get_market",
+        "description": "Today's S&P 500 movement and sentiment. Only relevant for finance-adjacent, luxury, or big-ticket contexts.",
+        "input_schema": {"type": "object", "properties": {}, "required": []},
+    },
+]
+
+# maps a tool name Claude requests to the real function that answers it;
+# doubling as the allowlist: a name not in this dict cannot be executed
+AGENT_TOOL_RUNNERS = {
+    "get_weather": lambda a: fetch_weather(a["lat"], a["lon"]),
+    "get_uv": lambda a: fetch_uv(a["lat"], a["lon"]),
+    "get_air_quality": lambda a: fetch_air_quality(a["lat"], a["lon"]),
+    "get_pollen": lambda a: fetch_pollen(a["lat"], a["lon"]),
+    "get_holiday": lambda a: fetch_holiday(a["country"]),
+    "get_market": lambda a: fetch_stock_market(),
+}
+
+# ---- Agentic mode: the loop ----
+# Instead of the pipeline (fetch everything, then write), here Claude is given
+# the tools and decides what it needs. It may call tools, read results, call
+# more, and only writes when it judges it has enough. This is the agentic
+# pattern: the model directs the work; this function is just the hands.
+def run_agent(lat, lon, country, merchant=None):
+    system = (
+        "You write one short, vivid storefront line for a contextual-commerce "
+        "platform. You have tools that report the shopper's live conditions. "
+        "Call ONLY the tools this moment actually needs, then write. Do not "
+        "call a tool whose signal wouldn't change the copy. Keep the final "
+        "line under 20 words, concrete, no emojis."
+    )
+    situation = f"Shopper location: lat {lat}, lon {lon}, country {country}."
+    if merchant:
+        situation += f" The store sells: {merchant}."
+
+    # the running transcript Claude and the loop pass back and forth
+    messages = [{"role": "user", "content": situation}]
+    trace = []          # which tools were chosen, in order: our observability
+    MAX_ROUNDS = 5      # guardrail: the loop can never run forever
+
+    for _ in range(MAX_ROUNDS):
+        resp = claude_client.messages.create(
+            model="claude-haiku-4-5",
+            max_tokens=400,
+            system=system,
+            tools=AGENT_TOOLS,
+            messages=messages,
+        )
+
+        # Claude signals it wants tools by stopping with reason "tool_use"
+        if resp.stop_reason == "tool_use":
+            # record Claude's turn verbatim so the next call has full context
+            messages.append({"role": "assistant", "content": resp.content})
+
+            tool_results = []
+            for block in resp.content:
+                if block.type == "tool_use":
+                    trace.append(block.name)
+                    runner = AGENT_TOOL_RUNNERS.get(block.name)
+                    # allowlist enforcement: unknown name = refused, not run
+                    if runner is None:
+                        out = {"error": f"unknown tool {block.name}"}
+                    else:
+                        try:
+                            out = runner(block.input)
+                        except Exception as e:
+                            out = {"error": str(e)}
+                    tool_results.append({
+                        "type": "tool_result",
+                        "tool_use_id": block.id,
+                        "content": json.dumps(out),
+                    })
+            # hand every tool's answer back to Claude for the next round
+            messages.append({"role": "user", "content": tool_results})
+            continue
+
+        # any other stop reason means Claude is done and wrote its line
+        text = "".join(b.text for b in resp.content if b.type == "text").strip()
+        return {"copy": text, "tools_used": trace, "rounds": len(trace)}
+
+    # safety net: hit the round cap without a final answer
+    return {"copy": None, "tools_used": trace, "rounds": len(trace), "note": "max rounds reached"}
+
 def generate_ai_copy(context):
     try:
         prompt = f"""You are a copywriter for a women's activewear store. Generate storefront copy based on the current context.
@@ -450,6 +598,16 @@ def get_context(request: Request, lat: float, lon: float, country: str = 'US', a
     context['ai_copy'] = ai_copy
     return context
 
+@app.get('/agent')
+@limiter.limit("10/minute")
+def get_agent(request: Request, lat: float, lon: float, country: str = 'US', merchant: str = None, api_key: str = Depends(verify_api_key)):
+    """
+    Agentic endpoint. Unlike /context (which fetches every signal, then writes),
+    Claude is handed the toolbox and decides which signals this moment needs.
+    Returns the copy plus the trace of tools it chose, in order.
+    """
+    result = run_agent(lat, lon, country, merchant)
+    return {'source': 'agent', 'model': 'claude-haiku-4-5', **result}
 
 @app.get('/news')
 @limiter.limit("30/minute")
