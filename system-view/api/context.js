@@ -1,42 +1,37 @@
-// Vercel serverless function — proxies requests to Ruuz Context API
-// Keeps the RUUZ_API_KEY secret (server-side only)
-
+// Vercel serverless function: proxies requests to the Ruuz Context API.
+// Keeps the RUUZ_API_KEY secret (server-side only). Coordinates come from
+// the query when given, otherwise from Vercel's geolocation headers.
 export default async function handler(req, res) {
-  // Only allow GET requests
   if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  // Extract query parameters
-  const { lat, lon, country = 'US', ai = 'true' } = req.query;
+  const lat = req.query.lat || req.headers['x-vercel-ip-latitude'] || '38.9'
+  const lon = req.query.lon || req.headers['x-vercel-ip-longitude'] || '-77.0'
+  const country = req.query.country || req.headers['x-vercel-ip-country'] || 'US'
+  const city = req.headers['x-vercel-ip-city']
+    ? decodeURIComponent(req.headers['x-vercel-ip-city'])
+    : null
 
-  if (!lat || !lon) {
-    return res.status(400).json({ error: 'Missing required parameters: lat, lon' });
-  }
+  // the dashboard shows signals, not pipeline copy: ai stays off unless asked
+  const ai = req.query.ai || 'false'
 
-  // Build Railway URL
-  const railwayUrl = `https://web-production-2b083.up.railway.app/context?lat=${lat}&lon=${lon}&country=${country}&ai=${ai}`;
+  const railwayUrl = `https://web-production-2b083.up.railway.app/context?lat=${lat}&lon=${lon}&country=${country}&ai=${ai}`
 
   try {
     const response = await fetch(railwayUrl, {
-      method: 'GET',
-      headers: {
-        'X-API-Key': process.env.RUUZ_API_KEY,
-      },
-    });
-
+      headers: { 'X-API-Key': process.env.RUUZ_API_KEY },
+    })
     if (!response.ok) {
-      return res.status(response.status).json({ error: 'Upstream API error' });
+      return res.status(response.status).json({ error: 'Upstream API error' })
     }
+    const data = await response.json()
 
-    const data = await response.json();
-
-    // Set cache headers — cache for 60 seconds to reduce load
-    res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=30');
-
-    return res.status(200).json(data);
+    // per-visitor answer, never shared through a cache
+    res.setHeader('Cache-Control', 'private, no-store')
+    return res.status(200).json({ ...data, city })
   } catch (error) {
-    console.error('Proxy error:', error);
-    return res.status(500).json({ error: 'Failed to fetch context' });
+    console.error('Proxy error:', error)
+    return res.status(500).json({ error: 'Failed to fetch context' })
   }
 }
