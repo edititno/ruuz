@@ -67,8 +67,25 @@ def get_time_of_day():
     return 'evening'
 
 def get_mood(weather_code):
+    # two-way family the storefront engine keys its assets on
     if weather_code in [800, 801, 802]:
         return 'sunny'
+    return 'rainy'
+
+def get_condition(weather_code):
+    # six-way read of the sky, from OpenWeather's code ranges
+    if weather_code in [800, 801, 802]:
+        return 'sunny'
+    if weather_code in [803, 804]:
+        return 'cloudy'
+    if 200 <= weather_code < 300:
+        return 'stormy'
+    if 300 <= weather_code < 600:
+        return 'rainy'
+    if 600 <= weather_code < 700:
+        return 'snowy'
+    if 700 <= weather_code < 800:
+        return 'foggy'
     return 'rainy'
 
 def get_uv_alert(uv):
@@ -359,15 +376,34 @@ AGENT_TOOL_RUNNERS = {
 # the tools and decides what it needs. It may call tools, read results, call
 # more, and only writes when it judges it has enough. This is the agentic
 # pattern: the model directs the work; this function is just the hands.
-def run_agent(lat, lon, country, merchant=None):
-    system = (
-        "You write one short, vivid storefront line for a contextual-commerce "
-        "platform. You have tools that report the shopper's live conditions. "
-        "Call ONLY the tools this moment actually needs, then write. Do not "
-        "call a tool whose signal wouldn't change the copy. Keep the final "
-        "line under 20 words, concrete, no emojis, plain text only: no markdown, no dashes."
-    )
-    situation = f"Shopper location: lat {lat}, lon {lon}, country {country}."
+def run_agent(lat, lon, country, merchant=None, city=None, hour=None):
+    # two voices: a storefront line when a merchant is given,
+    # a line about the moment itself when nothing is being sold
+    if merchant:
+        system = (
+            "You write one short, vivid storefront line for a contextual-commerce "
+            "platform. You have tools that report the shopper's live conditions. "
+            "Call ONLY the tools this moment actually needs, then write. Do not "
+            "call a tool whose signal wouldn't change the copy. Keep the final "
+            "line under 20 words, concrete, no emojis, plain text only: no markdown, no dashes."
+        )
+    else:
+        system = (
+            "You write one short, vivid line about what it is like to be in this "
+            "place at this moment: the sky, the hour, the air, the day. You have "
+            "tools that report live conditions. Call ONLY the tools that matter "
+            "for this moment, then write. Keep the final line under 25 words, "
+            "concrete, plain text only: no markdown, no dashes, no emojis."
+        )
+
+    # the visitor's local hour, if the client sent it; the server clock otherwise
+    if hour is None:
+        tod = get_time_of_day()
+    else:
+        tod = 'morning' if 5 <= hour < 12 else 'afternoon' if 12 <= hour < 17 else 'evening'
+
+    place = city or f"lat {lat}, lon {lon}"
+    situation = f"Place: {place} (lat {lat}, lon {lon}, country {country}). Local time: {tod}."
     if merchant:
         situation += f" The store sells: {merchant}."
 
@@ -426,7 +462,7 @@ def generate_ai_copy(context):
 Current conditions:
 - Weather: {context['weather']['description']}, {context['weather']['temp']}F (feels like {context['weather']['feels_like']}F)
 - Mood: {context['mood']}
-- Time of day: {context['time_of_day']}
+- Sky condition: {context['condition']}- Time of day: {context['time_of_day']}
 - Daylight: {context['daylight']}
 - UV index: {context['uv']['index']} ({context['uv']['alert']})
 - Air quality: {context['air_quality']['label']}
@@ -518,9 +554,11 @@ def get_context(request: Request, lat: float, lon: float, country: str = 'US', a
 
     # Determine mood
     mood = 'sunny'
+    condition = 'sunny'
     daylight = 'daylight'
     if weather:
         mood = get_mood(weather['code'])
+        condition = get_condition(weather['code'])
         daylight = get_daylight_status(weather['sunrise_ts'], weather['sunset_ts'])
 
     # Build alert messages
@@ -571,6 +609,7 @@ def get_context(request: Request, lat: float, lon: float, country: str = 'US', a
     # Build context for AI
     context = {
         'mood': mood,
+        'condition': condition,
         'time_of_day': time_of_day,
         'daylight': daylight,
         'weather': weather_clean or {'description': 'clear sky', 'temp': 70, 'feels_like': 70},
@@ -600,13 +639,13 @@ def get_context(request: Request, lat: float, lon: float, country: str = 'US', a
 
 @app.get('/agent')
 @limiter.limit("10/minute")
-def get_agent(request: Request, lat: float, lon: float, country: str = 'US', merchant: str = None, api_key: str = Depends(verify_api_key)):
+def get_agent(request: Request, lat: float, lon: float, country: str = 'US', merchant: str = None, city: str = None, hour: int = None, api_key: str = Depends(verify_api_key)):
     """
     Agentic endpoint. Unlike /context (which fetches every signal, then writes),
     Claude is handed the toolbox and decides which signals this moment needs.
     Returns the copy plus the trace of tools it chose, in order.
     """
-    result = run_agent(lat, lon, country, merchant)
+    result = run_agent(lat, lon, country, merchant, city, hour)
     return {'source': 'agent', 'model': 'claude-haiku-4-5', **result}
 
 @app.get('/news')
